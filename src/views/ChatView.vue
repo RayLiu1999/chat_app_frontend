@@ -3,7 +3,7 @@
     <!-- Sidebar -->
     <div class="w-20 bg-gray-950 flex flex-col items-center py-4">
       <div class="mb-4">
-        <div class="rounded-lg size-10 bg-gray-500">
+        <div class="rounded-lg size-10 bg-gray-500 cursor-pointer">
           <img alt="Chat Logo" src="/public/images/logo.png" width="40" class="h-auto" />
         </div>
       </div>
@@ -40,14 +40,14 @@
         <div class="space-y-2">
           <div class="flex items-center space-x-2">
             <i class="fas fa-user-friends text-gray-400"> </i>
-            <span> 好友 </span>
+            <span class="text-gray-400"> 好友 </span>
           </div>
         </div>
         <div class="mt-4">
-          <p class="text-3 mb-1">私人訊息</p>
+          <p class="text-gray-400 text-3 mb-1">私人訊息</p>
           <div class="flex items-center space-x-2 mb-2">
             <img alt="User" class="rounded-full size-10" src="/public/images/user1.jpg" />
-            <span> ホタル </span>
+            <span class="text-gray-400"> ホタル </span>
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@
         <div class="flex items-center justify-between bg-gray-950 p-4">
           <div class="flex items-center space-x-2">
             <img alt="User" class="rounded-full size-10" src="/public/images/user1.jpg" />
-            <span> ホタル </span>
+            <span class="text-gray-200 font-bold"> ホタル </span>
             <span class="text-gray-400"> | </span>
             <span class="text-gray-400"> LaplusDRKNESS, LapLusX </span>
           </div>
@@ -74,10 +74,10 @@
             <img alt="User" class="rounded-full size-10" src="/public/images/user1.jpg" />
             <div>
               <div class="flex items-center space-x-2">
-                <span> ホタル </span>
+                <span class="text-gray-200"> ホタル </span>
                 <span class="text-gray-400"> 今天 21:06 </span>
               </div>
-              <div>看來很糟</div>
+              <div class="text-gray-200">看來很糟</div>
             </div>
           </div>
           <div class="flex items-start space-x-2">
@@ -188,13 +188,13 @@
         <div class="flex flex-col items-center">
           <img alt="User" class="rounded-full size-10 mb-4" src="/public/images/user1.jpg" />
           <div class="text-center">
-            <div>ホタル</div>
+            <div class="text-gray-400">ホタル</div>
             <div class="text-gray-400">ho_ta_ru_firefly</div>
           </div>
         </div>
         <div class="mt-4">
           <div class="text-gray-400">啟動日期</div>
-          <div>2018年10月18日</div>
+          <div class="text-gray-400">2018年10月18日</div>
         </div>
         <div class="mt-4">
           <div class="text-gray-400">10 個共同伺服器</div>
