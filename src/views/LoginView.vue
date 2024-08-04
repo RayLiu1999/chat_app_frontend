@@ -1,29 +1,31 @@
 <template>
   <RouterLink class="text-white" to="/chat">
-    <div class="absolute top-8 left-8 flex items-center">
-      <img alt="Chat Logo" src="/public/images/logo.png" width="48" class="h-auto" />
+    <div class="absolute left-8 top-8 flex items-center">
+      <span class="mr-1">
+        <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem; color: white"></i>
+      </span>
       <span class="text-2xl">Chat App</span>
     </div>
   </RouterLink>
-  <div class="bg-gray-800 p-8 rounded-lg shadow-lg flex m-auto">
-    <div class="mr-auto w-100">
-      <h2 class="text-white text-2xl font-bold mb-2">歡迎回來！</h2>
-      <p class="text-gray-400 mb-6">我們很高興又見到您了！</p>
+  <div class="m-auto flex rounded-lg bg-gray-800 p-8 shadow-lg">
+    <div class="w-100 mr-auto">
+      <h2 class="mb-2 text-2xl font-bold text-white">歡迎回來！</h2>
+      <p class="mb-6 text-gray-400">我們很高興又見到您了！</p>
       <form>
         <div class="mb-4">
-          <label class="block text-gray-400 mb-1" for="email"> 電子郵件或電話號碼 </label>
+          <label class="mb-1 block text-gray-400" for="email"> 電子郵件或電話號碼 </label>
           <input
             id="email"
-            class="w-full p-2 bg-gray-700 text-white rounded"
+            class="w-full rounded bg-gray-700 p-2 text-white"
             name="email"
             type="text"
           />
         </div>
         <div class="mb-4">
-          <label class="block text-gray-400 mb-1" for="password"> 密碼 </label>
+          <label class="mb-1 block text-gray-400" for="password"> 密碼 </label>
           <input
             id="password"
-            class="w-full p-2 bg-gray-700 text-white rounded"
+            class="w-full rounded bg-gray-700 p-2 text-white"
             name="password"
             type="password"
           />
@@ -31,7 +33,7 @@
         <div class="mb-4">
           <a class="text-blue-400" href="#"> 忘記您的密碼？ </a>
         </div>
-        <button class="w-full bg-blue-600 text-white p-2 rounded hover-bg-blue-700">登入</button>
+        <button class="hover-bg-blue-700 w-full rounded bg-blue-600 p-2 text-white">登入</button>
       </form>
       <div class="mt-4 text-gray-400">
         需要一個帳號？

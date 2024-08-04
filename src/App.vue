@@ -21,7 +21,13 @@
   </div>
 </template>
 
-<style scoped>
+<style lang="scss">
+  .default-image {
+    background: url('@/assets/images/user1.jpg') no-repeat center center/cover;
+    overflow: hidden;
+    border-radius: 50%;
+  }
+
   /* header {
   line-height: 1.5;
   max-height: 100vh;

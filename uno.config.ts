@@ -11,5 +11,13 @@ export default defineConfig({
     ],
     // 底線選擇狀態
     ['border-current', 'absolute bottom-0 left-0 right-0 h-[1px] bg-white'],
+    // 頻道選擇狀態
+    ['host-border-none', 'absolute w-3px h-0px bg-white rounded left-0'],
+    ['host-border-active', 'absolute w-3px h-5px bg-white rounded left-0'],
+    ['host-border-current', 'absolute w-3px h-30px bg-white rounded left-0'],
+    ['host-border-hover', 'absolute w-3px hover: h-10px bg-white rounded left-0'],
+    // 按鈕選擇狀態
+    ['button-hover', 'hover:bg-#21244cfd rounded'],
+    ['button-current', 'bg-#21244cfd rounded'],
   ],
 })

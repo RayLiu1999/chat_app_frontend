@@ -4,19 +4,19 @@
       <div class="relative">
         <img
           alt="Background image with hands and a claw"
-          class="w-full h-200px object-cover rounded-t-lg"
-          src="/public/images/GTFy9B3aQAAz2JI.jpg"
+          class="h-200px w-full rounded-t-lg object-cover"
+          src="@/assets/images/GTFy9B3aQAAz2JI.jpg"
         />
         <!-- <div class="absolute top-2 right-2 flex items-center space-x-2">
           <button class="bg-#5a3d2b text-white rounded-full p-2">
             <i class="fas fa-ellipsis-h"> </i>
           </button>
         </div> -->
-        <div class="absolute bottom--40px left-4 flex items-center space-x-2">
+        <div class="bottom--40px absolute left-4 flex items-center space-x-2">
           <img
             alt="Profile picture"
-            class="w-80px h-80px rounded-full border-4 border-#0e0b17"
-            src="/public/images/user1.jpg"
+            class="w-80px h-80px border-#0e0b17 rounded-full border-4"
+            src="@/assets/images/user1.jpg"
           />
           <!-- <img
             alt="Status icon"
@@ -27,29 +27,29 @@
       </div>
     </template>
     <div class="m-2 pb-2">
-      <div class="pt-10 pb-2 pl-2">
+      <div class="pb-2 pl-2 pt-10">
         <div class="flex items-center">
-          <h1 class="text-xl text-gray-200 font-bold mr-2">ホタル</h1>
+          <h1 class="mr-2 text-xl font-bold text-gray-200">ホタル</h1>
           <span class="text-gray-200"> laplus </span>
         </div>
       </div>
-      <div class="bg-#1a1724 rounded-lg p-4 text-gray-200 h-400px">
+      <div class="bg-#1a1724 h-400px rounded-lg p-4 text-gray-200">
         <div class="relative">
-          <div class="absolute bottom-0 left-0 right-0 h-1px bg-gray-500"></div>
-          <div class="flex relative">
-            <div class="flex mr-4 pb-2 relative group">
+          <div class="h-1px absolute bottom-0 left-0 right-0 bg-gray-500"></div>
+          <div class="relative flex">
+            <div class="group relative mr-4 flex pb-2">
               <div class="border-hover transition-all duration-300"></div>
               關於我
             </div>
 
             <!-- 項目 2 -->
-            <div class="flex mr-4 pb-2 relative group">
+            <div class="group relative mr-4 flex pb-2">
               <div class="border-current transition-all duration-300"></div>
               5 位共同好友
             </div>
 
             <!-- 項目 3 -->
-            <div class="flex mr-4 pb-2 relative group">
+            <div class="group relative mr-4 flex pb-2">
               <div class="border-hover transition-all duration-300"></div>
               2 個共同伺服器
             </div>

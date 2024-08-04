@@ -4,23 +4,12 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ChatView from '../views/ChatView.vue'
 import ChatSettingView from '../views/ChatSettingView.vue'
+import ChatList from '@/components/ChatList.vue'
+import ChatRoom from '@/components/ChatRoom.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
     {
       path: '/login',
       name: 'login',
@@ -32,9 +21,29 @@ const router = createRouter({
       component: RegisterView,
     },
     {
-      path: '/chat',
-      name: 'chat',
+      path: '/channels',
+      name: 'channels',
       component: ChatView,
+      children: [
+        {
+          path: '',
+          redirect: '/channels/@me', // 默認重定向到 @me
+        },
+        {
+          path: '@me',
+          components: {
+            chatList: ChatList,
+            // friendList: FriendList,
+          },
+        },
+        {
+          path: '@me/:id',
+          components: {
+            chatList: ChatList,
+            chatRoom: ChatRoom,
+          },
+        },
+      ],
     },
     {
       path: '/chat-setting',
