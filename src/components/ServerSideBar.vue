@@ -4,11 +4,13 @@
       <div class="channel-group flex items-center">
         <span class="host-border-none"></span>
         <el-tooltip effect="dark" content="私人訊息" placement="left-start">
-          <div
-            class="bg-#5865f2 flex size-10 cursor-pointer items-center justify-center rounded-lg"
-          >
-            <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem; color: white"></i>
-          </div>
+          <RouterLink to="/channel">
+            <div
+              class="bg-#5865f2 flex size-10 cursor-pointer items-center justify-center rounded-lg"
+            >
+              <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem; color: white"></i>
+            </div>
+          </RouterLink>
         </el-tooltip>
       </div>
       <hr class="border-white-300 my-2 border-t" />

@@ -6,6 +6,8 @@ import ChatView from '../views/ChatView.vue'
 import ChatSettingView from '../views/ChatSettingView.vue'
 import ChatList from '@/components/ChatList.vue'
 import ChatRoom from '@/components/ChatRoom.vue'
+import ChannelList from '@/components/ChannelList.vue'
+import FriendList from '@/components/FriendList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,13 +35,13 @@ const router = createRouter({
           path: '@me',
           components: {
             chatList: ChatList,
-            // friendList: FriendList,
+            friendList: FriendList,
           },
         },
         {
           path: '@me/:id',
           components: {
-            chatList: ChatList,
+            channelList: ChannelList,
             chatRoom: ChatRoom,
           },
         },

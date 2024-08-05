@@ -1,5 +1,5 @@
 <template>
-  <RouterLink class="text-white" to="/chat">
+  <RouterLink class="text-white" to="/channel">
     <div class="absolute left-8 top-8 flex items-center">
       <span class="mr-1">
         <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem; color: white"></i>

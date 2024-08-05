@@ -1,12 +1,12 @@
 <template>
   <div class="w-100% flex h-screen">
-    <!-- Host Bar -->
-    <ChannelSideBar />
+    <!-- Server Bar -->
+    <ServerSideBar />
     <!-- Main Area -->
     <div class="flex flex-1">
       <!-- Side Content -->
       <RouterView name="chatList"></RouterView>
-      <RouterView name="chatList"></RouterView>
+      <RouterView name="channelList"></RouterView>
       <!-- Main Content -->
       <RouterView name="friendList"></RouterView>
       <RouterView name="chatRoom"></RouterView>
