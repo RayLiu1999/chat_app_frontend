@@ -5,11 +5,11 @@
     <div class="bg-#080a28 flex items-center justify-between p-4">
       <div class="flex items-center space-x-2">
         <div class="default-image w-40px h-40px">
-          <img alt="User" class="size-10 rounded-full" src="@/assets/images/user1.jpg" />
+          <img alt="User" class="h-full w-full" src="@/assets/images/user1.jpg" />
         </div>
-        <span class="font-bold text-gray-200"> ホタル </span>
+        <span class="cursor-pointer font-bold text-gray-200"> ホタル </span>
         <span class="text-gray-400"> | </span>
-        <span class="text-gray-400"> LaplusDRKNESS, LapLusX </span>
+        <span class="cursor-pointer text-gray-400"> LaplusDRKNESS, LapLusX </span>
       </div>
     </div>
     <!-- Chat Messages -->
@@ -19,7 +19,7 @@
           <div class="default-image w-40px h-40px mr-2">
             <img
               alt="User"
-              class="size-10 cursor-pointer rounded-full"
+              class="h-full w-full cursor-pointer"
               src="@/assets/images/user1.jpg"
               @click="UserProfileVisible = true"
             />
@@ -51,7 +51,7 @@
   <div class="bg-#080a28 w-60 p-4">
     <div class="flex flex-col items-center">
       <div class="default-image w-40px h-40px">
-        <img alt="User" class="mb-4 size-10 rounded-full" src="@/assets/images/user1.jpg" />
+        <img alt="User" class="mb-4 h-full w-full" src="@/assets/images/user1.jpg" />
       </div>
       <div class="text-center">
         <div class="text-gray-400">ホタル</div>

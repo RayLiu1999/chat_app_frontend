@@ -4,7 +4,7 @@
       <div class="channel-group flex items-center">
         <span class="host-border-none"></span>
         <el-tooltip effect="dark" content="私人訊息" placement="left-start">
-          <RouterLink to="/channel">
+          <RouterLink to="/channels/@me">
             <div
               class="bg-#5865f2 flex size-10 cursor-pointer items-center justify-center rounded-lg"
             >
@@ -19,13 +19,15 @@
       <div v-for="item in 10" :key="item" class="channel-group flex items-center">
         <span class="host-border-active"></span>
         <el-tooltip effect="dark" content="私人訊息" placement="left-start">
-          <div class="default-image w-40px h-40px">
-            <img
-              alt="User"
-              class="size-10 cursor-pointer rounded-full"
-              src="@/assets/images/user1.jpg"
-            />
-          </div>
+          <RouterLink :to="`/channels/@me/${item}`">
+            <div class="default-image w-40px h-40px">
+              <img
+                alt="User"
+                class="size-10 cursor-pointer rounded-full"
+                src="@/assets/images/user1.jpg"
+              />
+            </div>
+          </RouterLink>
         </el-tooltip>
       </div>
     </div>
