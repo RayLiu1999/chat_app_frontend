@@ -36,4 +36,9 @@
 
 <script lang="ts"></script>
 
-<style scoped></style>
+<style lang="scss" scoped>
+  .channel-group:hover .host-border-active,
+  .channel-group:hover .host-border-none {
+    height: 10px;
+  }
+</style>

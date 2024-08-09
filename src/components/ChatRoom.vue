@@ -15,7 +15,7 @@
     <!-- Chat Messages -->
     <el-scrollbar ref="scrollbarRef" :always="true" class="custom-scrollbar">
       <div ref="innerRef" class="bg-#080a28 flex-1 space-y-4 overflow-y-auto p-4">
-        <div v-for="item in 10" :key="item" class="flex items-start space-x-2">
+        <div v-for="item in 20" :key="item" class="flex items-start space-x-2">
           <div class="default-image w-40px h-40px mr-2">
             <img
               alt="User"
@@ -73,15 +73,27 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
+  import { ref, onMounted, watch, nextTick } from 'vue'
   import { useChatStore } from '@/stores/chat'
-  import UserProfileModal from '@/components/UserProfileModal.vue'
+  import { ElScrollbar } from 'element-plus'
+
+  // 使用 Pinia Store
+  const chatStore = useChatStore()
 
   // 使用 ref 來追蹤 UserProfileModal 的顯示狀態
   const UserProfileVisible = ref(false)
 
-  // 使用 Pinia Store
-  const chatStore = useChatStore()
+  // 使用 ref 來追蹤 ElScrollbar 的實例
+  const innerRef = ref<HTMLElement | null>(null)
+  const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
+
+  // 訊息列表
+  const messages = ref([
+    { id: 1, text: 'Hello' },
+    { id: 2, text: 'How are you?' },
+    { id: 3, text: 'I am fine, thank you!' },
+    // 更多消息...
+  ])
 
   // 更新 UserProfileModal 的顯示狀態
   const handleUpdate = (value: boolean) => {
@@ -104,6 +116,28 @@
       timestamp: new Date(),
     })
   }
+
+  // 卷軸捲到底部
+  const scrollToBottom = async () => {
+    scrollbarRef.value!.setScrollTop(innerRef.value!.clientHeight)
+  }
+
+  const delayedScrollToBottom = async () => {
+    await nextTick()
+    await scrollToBottom()
+  }
+
+  onMounted(async () => {
+    await delayedScrollToBottom()
+  })
+
+  watch(messages, async (newMessages, oldMessages) => {
+    delayedScrollToBottom()
+  })
 </script>
 
-<style scoped></style>
+<style lang="scss">
+  .custom-scrollbar {
+    // background-color: #080a28;
+  }
+</style>
