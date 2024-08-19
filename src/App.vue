@@ -16,9 +16,9 @@
       </nav>
     </div>
   </header> -->
-  <div class="w-100% flex">
-    <RouterView />
-  </div>
+  <!-- <div class="w-100% flex"> -->
+  <RouterView />
+  <!-- </div> -->
 </template>
 
 <style lang="scss">
