@@ -28,6 +28,12 @@
     border-radius: 50%;
   }
 
+  .custom-dialog {
+    padding: 0;
+    border-radius: 0.5rem;
+    background-color: #0e0b17;
+  }
+
   /* header {
   line-height: 1.5;
   max-height: 100vh;

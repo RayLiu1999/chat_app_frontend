@@ -119,7 +119,7 @@
   const visible = ref(false)
 
   const props = defineProps<{
-    modalVisible: boolean
+    dialogVisible: boolean
   }>()
 
   const emit = defineEmits<{
@@ -127,7 +127,7 @@
   }>()
 
   watch(
-    () => props.modalVisible,
+    () => props.dialogVisible,
     (newValue) => {
       visible.value = newValue
     },

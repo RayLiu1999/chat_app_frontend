@@ -15,11 +15,24 @@
         <span class="hover:bg-#2b3375 flex w-8 flex-1 cursor-pointer justify-center rounded">
           <i class="bi bi-volume-down-fill" style="font-size: 2rem; line-height: 0rem"></i>
         </span>
-        <span class="hover:bg-#2b3375 flex w-8 flex-1 cursor-pointer justify-center rounded">
+        <span
+          class="hover:bg-#2b3375 flex w-8 flex-1 cursor-pointer justify-center rounded"
+          @click="SettingDialogVisible = true"
+        >
           <i class="bi bi-gear-fill" style="font-size: 1.2rem"></i>
         </span>
       </div>
     </div>
   </div>
+  <SettingDialog :dialog-visible="SettingDialogVisible" @update-visible="handleUpdate" />
 </template>
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+  import { ref } from 'vue'
+
+  const SettingDialogVisible = ref(false)
+
+  // 更新 SettingDialog 的顯示狀態
+  const handleUpdate = (value: boolean) => {
+    SettingDialogVisible.value = value
+  }
+</script>

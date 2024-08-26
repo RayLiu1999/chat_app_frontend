@@ -69,7 +69,7 @@
       <div class="text-gray-400">5 位共同好友</div>
     </div>
   </div>
-  <UserProfileModal :modal-visible="UserProfileVisible" @update-visible="handleUpdate" />
+  <UserProfileDialog :dialog-visible="UserProfileVisible" @update-visible="handleUpdate" />
 </template>
 
 <script lang="ts" setup>
@@ -80,7 +80,7 @@
   // 使用 Pinia Store
   const chatStore = useChatStore()
 
-  // 使用 ref 來追蹤 UserProfileModal 的顯示狀態
+  // 使用 ref 來追蹤 UserProfileDialog 的顯示狀態
   const UserProfileVisible = ref(false)
 
   // 使用 ref 來追蹤 ElScrollbar 的實例
@@ -95,7 +95,7 @@
     // 更多消息...
   ])
 
-  // 更新 UserProfileModal 的顯示狀態
+  // 更新 UserProfileDialog 的顯示狀態
   const handleUpdate = (value: boolean) => {
     UserProfileVisible.value = value
   }
