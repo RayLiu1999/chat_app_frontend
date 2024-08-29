@@ -6,45 +6,55 @@
     center
     :fullscreen="true"
     class="custom-dialog"
+    :show-close="false"
   >
-    <div class="flex">
+    <template #header>
+      <div class="custom-dialog-header"></div>
+    </template>
+    <div class="flex h-screen">
       <!-- Sidebar -->
-      <div class="w-1/4 bg-gray-900 p-4">
-        <div class="relative mb-4">
-          <input class="w-full rounded bg-gray-700 p-2 text-white" placeholder="搜尋" type="text" />
-          <i class="fas fa-search absolute right-3 top-3 text-gray-400"> </i>
+      <div class="bg-#0d1245 w-1/4 p-4">
+        <div class="justify-items-end">
+          <div class="relative mb-4">
+            <input
+              class="bg-#14175a w-full rounded p-2 text-white"
+              placeholder="搜尋"
+              type="text"
+            />
+            <i class="fas fa-search absolute right-3 top-3 text-gray-400"> </i>
+          </div>
+          <ul class="space-y-2">
+            <li class="text-gray-400">使用者設定</li>
+            <li class="text-white">我的帳號</li>
+            <li class="rounded bg-gray-700 p-2 text-white">個人資料</li>
+            <!-- <li class="text-white">隱私 &amp; 安全</li>
+            <li class="text-white">家庭中心</li>
+            <li class="text-white">已連結的應用程式</li>
+            <li class="text-white">裝置</li>
+            <li class="text-white">連接</li>
+            <li class="text-white">簡單影片</li>
+            <li class="text-white">好友請求</li>
+            <li class="text-gray-400">帳單設定</li>
+            <li class="text-white">Nitro</li>
+            <li class="text-white">伺服器加成</li>
+            <li class="text-white">訂閱</li>
+            <li class="text-white">禮物庫存</li>
+            <li class="text-white">帳單</li>
+            <li class="text-gray-400">應用程式設定</li>
+            <li class="text-white">外觀</li>
+            <li class="text-white">輔助功能</li>
+            <li class="text-white">語音 &amp; 視訊</li>
+            <li class="text-white">聊天</li>
+            <li class="text-white">通知</li>
+            <li class="text-white">快捷鍵</li>
+            <li class="text-white">語言</li>
+            <li class="text-white">Windows 設定</li>
+            <li class="text-white">直播模式</li> -->
+          </ul>
         </div>
-        <ul class="space-y-2">
-          <li class="text-gray-400">使用者設定</li>
-          <li class="text-white">我的帳號</li>
-          <li class="rounded bg-gray-700 p-2 text-white">個人資料</li>
-          <li class="text-white">隱私 &amp; 安全</li>
-          <li class="text-white">家庭中心</li>
-          <li class="text-white">已連結的應用程式</li>
-          <li class="text-white">裝置</li>
-          <li class="text-white">連接</li>
-          <li class="text-white">簡單影片</li>
-          <li class="text-white">好友請求</li>
-          <li class="text-gray-400">帳單設定</li>
-          <li class="text-white">Nitro</li>
-          <li class="text-white">伺服器加成</li>
-          <li class="text-white">訂閱</li>
-          <li class="text-white">禮物庫存</li>
-          <li class="text-white">帳單</li>
-          <li class="text-gray-400">應用程式設定</li>
-          <li class="text-white">外觀</li>
-          <li class="text-white">輔助功能</li>
-          <li class="text-white">語音 &amp; 視訊</li>
-          <li class="text-white">聊天</li>
-          <li class="text-white">通知</li>
-          <li class="text-white">快捷鍵</li>
-          <li class="text-white">語言</li>
-          <li class="text-white">Windows 設定</li>
-          <li class="text-white">直播模式</li>
-        </ul>
       </div>
       <!-- Main Content -->
-      <div class="flex-1 p-6">
+      <div class="bg-#080a28 flex-1 p-6">
         <div class="mb-4 flex items-center justify-between">
           <h1 class="text-2xl">個人資料</h1>
           <button class="text-gray-400">
@@ -56,7 +66,7 @@
           <button class="text-white">使用者個人資料</button>
           <button class="text-gray-400">伺服器個人資料</button>
         </div>
-        <div class="mb-4 rounded bg-gray-700 p-4">
+        <div class="bg-#080a28 mb-4 rounded p-4">
           <p class="text-white">是誰住在深海的大鳳梨裡？</p>
           <button class="rounded bg-blue-500 px-4 py-2 text-white">新佳商店</button>
         </div>
@@ -146,3 +156,5 @@
     },
   )
 </script>
+
+<style lang="scss" scoped></style>

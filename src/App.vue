@@ -32,6 +32,10 @@
     padding: 0;
     border-radius: 0.5rem;
     background-color: #0e0b17;
+    // >可以強制指定只有這層class才會讀到
+    > .el-dialog__header {
+      padding: 0 !important;
+    }
   }
 
   /* header {
