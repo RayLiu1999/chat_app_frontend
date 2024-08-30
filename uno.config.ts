@@ -17,7 +17,7 @@ export default defineConfig({
     ['host-border-current', 'absolute w-3px h-30px bg-white rounded left-0'],
     ['host-border-hover', 'absolute w-3px hover: h-10px bg-white rounded left-0'],
     // 按鈕選擇狀態
-    ['button-hover', 'hover:bg-#21244cfd rounded'],
-    ['button-current', 'bg-#21244cfd rounded'],
+    ['button-hover', 'hover:bg-#313557 rounded cursor-pointer'],
+    ['button-current', 'bg-#313557 rounded cursor-pointer'],
   ],
 })

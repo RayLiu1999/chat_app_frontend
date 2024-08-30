@@ -13,8 +13,8 @@
     </template>
     <div class="flex h-screen">
       <!-- Sidebar -->
-      <div class="bg-#0d1245 w-1/4 p-4">
-        <div class="justify-items-end">
+      <div class="bg-#0d1245 w-1/3 p-4">
+        <div class="ml-auto mt-6 w-1/3 justify-items-end">
           <div class="relative mb-4">
             <input
               class="bg-#14175a w-full rounded p-2 text-white"
@@ -24,45 +24,22 @@
             <i class="fas fa-search absolute right-3 top-3 text-gray-400"> </i>
           </div>
           <ul class="space-y-2">
-            <li class="text-gray-400">使用者設定</li>
-            <li class="text-white">我的帳號</li>
-            <li class="rounded bg-gray-700 p-2 text-white">個人資料</li>
-            <!-- <li class="text-white">隱私 &amp; 安全</li>
-            <li class="text-white">家庭中心</li>
-            <li class="text-white">已連結的應用程式</li>
-            <li class="text-white">裝置</li>
-            <li class="text-white">連接</li>
-            <li class="text-white">簡單影片</li>
-            <li class="text-white">好友請求</li>
-            <li class="text-gray-400">帳單設定</li>
-            <li class="text-white">Nitro</li>
-            <li class="text-white">伺服器加成</li>
-            <li class="text-white">訂閱</li>
-            <li class="text-white">禮物庫存</li>
-            <li class="text-white">帳單</li>
-            <li class="text-gray-400">應用程式設定</li>
-            <li class="text-white">外觀</li>
-            <li class="text-white">輔助功能</li>
-            <li class="text-white">語音 &amp; 視訊</li>
-            <li class="text-white">聊天</li>
-            <li class="text-white">通知</li>
-            <li class="text-white">快捷鍵</li>
-            <li class="text-white">語言</li>
-            <li class="text-white">Windows 設定</li>
-            <li class="text-white">直播模式</li> -->
+            <span class="text-size-xs p-2 text-gray-400">使用者設定</span>
+            <li class="button-hover p-2 text-white">我的帳號</li>
+            <li class="button-current p-2 text-white">個人資料</li>
           </ul>
         </div>
       </div>
       <!-- Main Content -->
       <div class="bg-#080a28 flex-1 p-6">
         <div class="mb-4 flex items-center justify-between">
-          <h1 class="text-2xl">個人資料</h1>
+          <h1 class="text-2xl font-bold text-white">個人資料</h1>
           <button class="text-gray-400">
             <i class="fas fa-times"> </i>
             ESC
           </button>
         </div>
-        <div class="mb-4 flex space-x-4">
+        <div class="border-b-1 mb-4 flex space-x-4">
           <button class="text-white">使用者個人資料</button>
           <button class="text-gray-400">伺服器個人資料</button>
         </div>
