@@ -1,6 +1,6 @@
 <template>
   <div class="mb-4 flex items-center justify-between">
-    <h1 class="text text-2xl font-bold">個人資料</h1>
+    <h2 class="text text-2xl font-bold">個人資料</h2>
   </div>
   <!-- <div class="border-b-1 mb-4 flex space-x-4">
               <button class="text">使用者個人資料</button>
@@ -19,13 +19,13 @@
       <div class="border-b-1 border-gray-5 flex flex-col py-6">
         <label class="font-size-3 text-gray-4 mb-2 block"> 頭像 </label>
         <div class="space-x-3">
-          <button class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-2">變更頭像</button>
-          <a class="text px-4 py-2 hover:underline">移除頭像</a>
+          <button class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-1.5">變更頭像</button>
+          <a class="text px-4 py-1.5 hover:underline">移除頭像</a>
         </div>
       </div>
       <div class="border-b-1 border-gray-5 py-6">
         <label class="font-size-3 text-gray-4 mb-2 block">變更橫幅 </label>
-        <button class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-2">變更橫幅</button>
+        <button class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-1.5">變更橫幅</button>
       </div>
       <div class="py-6">
         <label class="font-size-3 text-gray-4 mb-2 block">變更橫幅 </label>
@@ -41,7 +41,7 @@
             <img
               alt="Background image with hands and a claw"
               class="h-full w-full rounded-t-lg object-cover"
-              src=""
+              src="@/assets/images/GTFy9B3aQAAz2JI.jpg"
             />
           </div>
           <div class="bottom--40px absolute left-4 flex items-center space-x-2">
@@ -54,7 +54,7 @@
         </div>
         <div class="ml-2 pb-2 pl-2 pt-12">
           <div class="flex items-center">
-            <h1 class="text mr-2 text-xl font-bold">ホタル</h1>
+            <span class="text mr-2 text-xl font-bold">ホタル</span>
             <span class="text"> laplus </span>
           </div>
           <p class="text mt-2">1234</p>

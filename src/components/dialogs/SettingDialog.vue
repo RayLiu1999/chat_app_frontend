@@ -22,8 +22,12 @@
             </div>
             <ul class="space-y-2">
               <span class="text-size-xs text-gray-4 p-2">使用者設定</span>
-              <li class="button-current text p-2">我的帳號</li>
-              <li class="button-hover text p-2">個人資料</li>
+              <li class="button-current text p-2" @click="currentComponent = AccountSetting">
+                我的帳號
+              </li>
+              <li class="button-hover text p-2" @click="currentComponent = UserProfileSetting">
+                個人資料
+              </li>
             </ul>
           </div>
         </div>
@@ -32,13 +36,15 @@
           <div class="w-3/5">
             <component :is="currentComponent" />
           </div>
-          <span
-            class="text-gray-5 hover:text-gray-4 ml-3 flex flex-col items-center"
-            @click="visible = false"
-          >
-            <i class="bi bi-x-circle" style="font-size: 1.8rem"></i>
-            ESC
-          </span>
+          <div>
+            <span
+              class="text-gray-5 hover:text-gray-4 ml-3 flex cursor-pointer flex-col items-center"
+              @click="visible = false"
+            >
+              <i class="bi bi-x-circle" style="font-size: 1.8rem"></i>
+              ESC
+            </span>
+          </div>
         </div>
       </div>
     </el-dialog>
