@@ -5,10 +5,10 @@
         <img alt="User" class="h-full w-full" src="@/assets/images/user1.jpg" />
       </div>
       <div class="ml-2">
-        <div class="text-sm text-white">ホタル</div>
+        <div class="text text-sm">ホタル</div>
         <div class="text-xs text-green-500">線上</div>
       </div>
-      <div class="ml-auto flex space-x-2 text-gray-400">
+      <div class="weak-text ml-auto flex space-x-2">
         <span class="hover:bg-#2b3375 flex w-8 flex-1 cursor-pointer justify-center rounded">
           <i class="bi bi-mic-fill" style="font-size: 1.2rem"></i>
         </span>

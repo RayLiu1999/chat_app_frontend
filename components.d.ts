@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccountSetting: typeof import('./src/components/AccountSetting.vue')['default']
     BottomBar: typeof import('./src/components/BottomBar.vue')['default']
     ChannelList: typeof import('./src/components/ChannelList.vue')['default']
     ChatInput: typeof import('./src/components/ChatInput.vue')['default']
@@ -14,7 +15,6 @@ declare module 'vue' {
     ChatMessages: typeof import('./src/components/ChatMessages.vue')['default']
     ChatRoom: typeof import('./src/components/ChatRoom.vue')['default']
     ChatWindow: typeof import('./src/components/ChatWindow.vue')['default']
-    ElButton: typeof import('element-plus/es')['ElButton']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
     ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
@@ -35,6 +35,7 @@ declare module 'vue' {
     SettingDialog: typeof import('./src/components/dialogs/SettingDialog.vue')['default']
     TheWelcome: typeof import('./src/components/TheWelcome.vue')['default']
     UserProfileDialog: typeof import('./src/components/dialogs/UserProfileDialog.vue')['default']
+    UserProfileSetting: typeof import('./src/components/UserProfileSetting.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
   }
 }

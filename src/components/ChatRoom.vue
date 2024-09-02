@@ -7,9 +7,9 @@
         <div class="default-image w-40px h-40px">
           <img alt="User" class="h-full w-full" src="@/assets/images/user1.jpg" />
         </div>
-        <span class="cursor-pointer font-bold text-gray-200"> ホタル </span>
-        <span class="text-gray-400"> | </span>
-        <span class="cursor-pointer text-gray-400"> LaplusDRKNESS, LapLusX </span>
+        <span class="text cursor-pointer font-bold"> ホタル </span>
+        <span class="weak-text"> | </span>
+        <span class="weak-text cursor-pointer"> LaplusDRKNESS, LapLusX </span>
       </div>
     </div>
     <!-- Chat Messages -->
@@ -26,10 +26,10 @@
           </div>
           <div>
             <div class="flex items-center space-x-2">
-              <span class="text-gray-300"> ホタル </span>
-              <span class="text-gray-500"> 今天 21:15 </span>
+              <span class="text"> ホタル </span>
+              <span class="weak-text"> 今天 21:15 </span>
             </div>
-            <span class="text-gray-300">讚讚</span>
+            <span class="text">讚讚</span>
           </div>
         </div>
       </div>
@@ -37,14 +37,14 @@
     <!-- Chat Input -->
     <div class="bg-#080a28 flex items-center space-x-2 p-4">
       <input
-        class="bg-#14175a flex-1 rounded p-2 text-white"
+        class="bg-#14175a text flex-1 rounded p-2"
         placeholder="傳送訊息給 @ホタル"
         type="text"
         @keydown.enter="sendMessage($event)"
       />
-      <i class="fas fa-gift text-gray-400"> </i>
-      <i class="fas fa-image text-gray-400"> </i>
-      <i class="fas fa-smile text-gray-400"> </i>
+      <i class="fas fa-gift weak-text"> </i>
+      <i class="fas fa-image weak-text"> </i>
+      <i class="fas fa-smile weak-text"> </i>
     </div>
   </div>
   <!-- Userfo -->
@@ -54,19 +54,19 @@
         <img alt="User" class="mb-4 h-full w-full" src="@/assets/images/user1.jpg" />
       </div>
       <div class="text-center">
-        <div class="text-gray-400">ホタル</div>
-        <div class="text-gray-400">ho_ta_ru_firefly</div>
+        <div class="weak-text">ホタル</div>
+        <div class="weak-text">ho_ta_ru_firefly</div>
       </div>
     </div>
     <div class="mt-4">
-      <div class="text-gray-400">啟動日期</div>
-      <div class="text-gray-400">2018年10月18日</div>
+      <div class="weak-text">啟動日期</div>
+      <div class="weak-text">2018年10月18日</div>
     </div>
     <div class="mt-4">
-      <div class="text-gray-400">10 個共同伺服器</div>
+      <div class="weak-text">10 個共同伺服器</div>
     </div>
     <div class="mt-4">
-      <div class="text-gray-400">5 位共同好友</div>
+      <div class="weak-text">5 位共同好友</div>
     </div>
   </div>
   <UserProfileDialog :dialog-visible="UserProfileVisible" @update-visible="handleUpdate" />

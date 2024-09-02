@@ -19,5 +19,8 @@ export default defineConfig({
     // 按鈕選擇狀態
     ['button-hover', 'hover:bg-#313557 rounded cursor-pointer'],
     ['button-current', 'bg-#313557 rounded cursor-pointer'],
+    // 文字樣式
+    ['text', 'text-gray-2'],
+    ['weak-text', 'text-gray-5'],
   ],
 })

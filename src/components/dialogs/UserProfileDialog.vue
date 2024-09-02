@@ -2,38 +2,31 @@
   <el-dialog v-model="visible" width="500" class="custom-dialog" :show-close="false">
     <template #header>
       <div class="relative">
-        <img
-          alt="Background image with hands and a claw"
-          class="h-200px w-full rounded-t-lg object-cover"
-          src="@/assets/images/GTFy9B3aQAAz2JI.jpg"
-        />
-        <!-- <div class="absolute top-2 right-2 flex items-center space-x-2">
-          <button class="bg-#5a3d2b text-white rounded-full p-2">
-            <i class="fas fa-ellipsis-h"> </i>
-          </button>
-        </div> -->
+        <div class="aspect-ratio-16/7 w-full">
+          <img
+            alt="Background image with hands and a claw"
+            class="h-full w-full rounded-t-lg object-cover"
+            src="@/assets/images/GTFy9B3aQAAz2JI.jpg"
+          />
+        </div>
         <div class="bottom--40px absolute left-4 flex items-center space-x-2">
           <img
             alt="Profile picture"
             class="w-80px h-80px border-#0e0b17 rounded-full border-4"
             src="@/assets/images/user1.jpg"
           />
-          <!-- <img
-            alt="Status icon"
-            class="w-30px h-30px rounded-full border-4 border-#d9a7c7"
-            src="https://placehold.co/30x30"
-          /> -->
         </div>
       </div>
     </template>
     <div class="m-2 pb-2">
-      <div class="pb-2 pl-2 pt-10">
+      <div class="pb-2 pl-2 pt-8">
         <div class="flex items-center">
-          <h1 class="mr-2 text-xl font-bold text-gray-200">ホタル</h1>
-          <span class="text-gray-200"> laplus </span>
+          <h1 class="text mr-2 text-xl font-bold">ホタル</h1>
+          <span class="text"> laplus </span>
         </div>
+        <p class="text mt-2">1234</p>
       </div>
-      <div class="bg-#1a1724 h-400px rounded-lg p-4 text-gray-200">
+      <div class="h-400px text bg-#333354 rounded-lg p-4">
         <div class="relative">
           <div class="h-1px absolute bottom-0 left-0 right-0 bg-gray-500"></div>
           <div class="relative flex">
@@ -141,10 +134,4 @@
   )
 </script>
 
-<style>
-  .custom-dialog {
-    padding: 0;
-    border-radius: 0.5rem;
-    background-color: #0e0b17;
-  }
-</style>
+<style></style>
