@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen w-screen items-center justify-center">
+  <div class="bg-#0d1245 flex h-screen w-screen items-center justify-center">
     <RouterLink class="text-white" to="/channels">
       <div class="absolute left-8 top-8 flex items-center">
         <span class="mr-1">

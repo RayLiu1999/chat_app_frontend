@@ -17,6 +17,7 @@
             <label class="mb-1 block text-gray-400" for="email"> 電子郵件或電話號碼 </label>
             <input
               id="email"
+              v-model="email"
               class="w-full rounded bg-gray-700 p-2 text-white"
               name="email"
               type="text"
@@ -26,6 +27,7 @@
             <label class="mb-1 block text-gray-400" for="password"> 密碼 </label>
             <input
               id="password"
+              v-model="password"
               class="w-full rounded bg-gray-700 p-2 text-white"
               name="password"
               type="password"
@@ -51,27 +53,29 @@
 </template>
 
 <script lang="ts" setup>
+  import { ref } from 'vue'
   import { RouterLink } from 'vue-router'
 
-  const handleSubmit = (event: Event) => {
+  const email = ref('')
+  const password = ref('')
+
+  const handleSubmit = async (event: Event) => {
     event.preventDefault()
-    // fetch API
-    fetch('http://localhost:3000/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: (document.getElementById('email') as HTMLInputElement).value,
-        password: (document.getElementById('password') as HTMLInputElement).value,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data)
+    try {
+      const response = await fetch('http://localhost:8080/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: email.value,
+          password: password.value,
+        }),
       })
-      .catch((error) => {
-        console.error('Error:', error)
-      })
+      const data = await response.json()
+      console.log(data)
+    } catch (error) {
+      console.error('Error:', error)
+    }
   }
 </script>
