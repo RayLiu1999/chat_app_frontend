@@ -53,11 +53,22 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
+  import { ref, inject } from 'vue'
   import { RouterLink } from 'vue-router'
 
   const email = ref('')
   const password = ref('')
+  const csrfToken = { name: '', value: '' }
+
+  const globalFunctions = inject<GlobalFunctions>('globalFunctions')
+
+  if (globalFunctions && globalFunctions.generateCsrfToken) {
+    const token = globalFunctions.generateCsrfToken()
+    csrfToken.name = token.name
+    csrfToken.value = token.value
+  } else {
+    console.error('Failed to inject generateCsrfToken')
+  }
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault()
@@ -66,7 +77,10 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-NAME': csrfToken.name,
+          'X-CSRF-TOKEN': csrfToken.value,
         },
+        credentials: 'include',
         body: JSON.stringify({
           username: email.value,
           password: password.value,
