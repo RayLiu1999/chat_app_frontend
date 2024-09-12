@@ -55,20 +55,19 @@
 <script lang="ts" setup>
   import { ref, inject } from 'vue'
   import { RouterLink } from 'vue-router'
+  import type { CSRFToken } from '@/types/auth'
+  import { generateCSRFToken } from '@/composables/auth'
 
   const email = ref('')
   const password = ref('')
-  const csrfToken = { name: '', value: '' }
-
-  const globalFunctions = inject<GlobalFunctions>('globalFunctions')
-
-  if (globalFunctions && globalFunctions.generateCsrfToken) {
-    const token = globalFunctions.generateCsrfToken()
-    csrfToken.name = token.name
-    csrfToken.value = token.value
-  } else {
-    console.error('Failed to inject generateCsrfToken')
+  const csrfToken: CSRFToken = {
+    name: '',
+    value: '',
   }
+
+  const token = generateCSRFToken()
+  csrfToken.name = token.name
+  csrfToken.value = token.value
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault()

@@ -11,7 +11,6 @@ import App from './App.vue'
 import router from './router'
 // bootstrap icon
 import 'bootstrap-icons/font/bootstrap-icons.css'
-import { globalFunctionsPlugin } from './plugins/global-functions';
 
 const app = createApp(App)
 
@@ -21,10 +20,5 @@ app.use(router)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
-
-// 註冊全域函數插件
-// app.use(globalFunctionsPlugin);
-
-globalFunctionsPlugin(app);
 
 app.mount('#app')
