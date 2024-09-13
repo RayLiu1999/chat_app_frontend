@@ -57,6 +57,7 @@
   import { RouterLink } from 'vue-router'
   import type { CSRFToken } from '@/types/auth'
   import { generateCSRFToken } from '@/composables/auth'
+  import axios from 'axios'
 
   const email = ref('')
   const password = ref('')
@@ -72,21 +73,25 @@
   const handleSubmit = async (event: Event) => {
     event.preventDefault()
     try {
-      const response = await fetch(`${import.meta.env.VITE_APP_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-NAME': csrfToken.name,
-          'X-CSRF-TOKEN': csrfToken.value,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: email.value,
-          password: password.value,
-        }),
-      })
-      const data = await response.json()
-      console.log(data)
+      axios
+        .post(
+          `${import.meta.env.VITE_API_URL}/login`,
+          {
+            username: email.value,
+            password: password.value,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-NAME': csrfToken.name,
+              'X-CSRF-TOKEN': csrfToken.value,
+            },
+            withCredentials: true,
+          },
+        )
+        .then((response) => {
+          console.log(response)
+        })
     } catch (error) {
       console.error('Error:', error)
     }
