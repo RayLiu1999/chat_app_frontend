@@ -22,5 +22,6 @@ export default defineConfig({
     // 文字樣式
     ['text', 'text-gray-2'],
     ['weak-text', 'text-gray-5'],
+    ['required', 'text-red-5'],
   ],
 })

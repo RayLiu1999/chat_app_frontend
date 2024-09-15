@@ -8,6 +8,7 @@ import ChatList from '@/components/ChatList.vue'
 import ChatRoom from '@/components/ChatRoom.vue'
 import ChannelList from '@/components/ChannelList.vue'
 import FriendList from '@/components/FriendList.vue'
+import { useTokenStore } from '@/stores/token'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,6 +54,17 @@ const router = createRouter({
       component: ChatSettingView,
     },
   ],
+})
+
+// 身分驗證
+router.beforeEach((to, from, next) => {
+  const tokenStore = useTokenStore()
+  const isAuthenticated = tokenStore.isAuthenticated
+  if (to.name !== 'login' && to.name !== 'register' && !isAuthenticated) {
+    next({ name: 'login' })
+  } else {
+    next()
+  }
 })
 
 export default router
