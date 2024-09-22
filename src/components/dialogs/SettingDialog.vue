@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { defineProps, ref, watch, defineEmits } from 'vue'
+  import { ref, watch } from 'vue'
   import UserProfileSetting from '@/components/UserProfileSetting.vue'
   import AccountSetting from '@/components/AccountSetting.vue'
 

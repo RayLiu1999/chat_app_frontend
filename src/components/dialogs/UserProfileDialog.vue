@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { defineProps, ref, watch, defineEmits } from 'vue'
+  import { ref, watch } from 'vue'
 
   const visible = ref(false)
 

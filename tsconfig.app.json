@@ -1,14 +1,29 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "src/types/global.d.ts"],
-  "exclude": ["src/**/__tests__/*"],
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "src/types/global.d.ts"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
   "compilerOptions": {
+    "strict": true, // 開啟嚴格模式
+    "noImplicitAny": true, // 禁止隱式的 any 類型
+    "strictNullChecks": true, // 嚴格檢查 null 和 undefined
+    "noImplicitThis": true, // 禁止隱式的 this
+    "alwaysStrict": true, // 總是啟用嚴格模式的 JavaScript 編譯
+    "strictFunctionTypes": true, // 嚴格的函數類型檢查
+    "strictPropertyInitialization": true, // 檢查 class 的屬性初始化
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   }
 }

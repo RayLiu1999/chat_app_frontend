@@ -33,6 +33,7 @@
               :type="item.type"
               v-model="item.value"
             />
+            <p class="text mt-1 text-sm">{{ item.remark }}</p>
           </div>
           <button
             class="hover-bg-blue-700 mt-2 w-full rounded bg-blue-600 p-2 text-white"
@@ -63,6 +64,7 @@
     required: boolean
     value: string
     error: boolean
+    remark: string
   }
 
   const columns = ref<Record<string, Column>>({
@@ -73,6 +75,7 @@
       required: true,
       value: '',
       error: false,
+      remark: '',
     },
     display_name: {
       label: '顯示名稱',
@@ -81,6 +84,7 @@
       required: false,
       value: '',
       error: false,
+      remark: '其他人會看見您的顯示名稱，可使用特殊字元和表情符號。',
     },
     username: {
       label: '使用者名稱',
@@ -89,6 +93,7 @@
       required: true,
       value: '',
       error: false,
+      remark: '請只使用數字、字母、底線 _，或英文句號 (.)。',
     },
     password: {
       label: '密碼',
@@ -97,6 +102,7 @@
       required: true,
       value: '',
       error: false,
+      remark: '',
     },
   })
 

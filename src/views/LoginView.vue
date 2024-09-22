@@ -3,7 +3,7 @@
     <RouterLink class="text-white" to="/channels">
       <div class="absolute left-8 top-8 flex items-center">
         <span class="mr-1">
-          <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem; color: white" />
+          <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem; color: white"></i>
         </span>
         <span class="text-2xl">Chat App</span>
       </div>

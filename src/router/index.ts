@@ -8,7 +8,7 @@ import ChatList from '@/components/ChatList.vue'
 import ChatRoom from '@/components/ChatRoom.vue'
 import ChannelList from '@/components/ChannelList.vue'
 import FriendList from '@/components/FriendList.vue'
-import { useTokenStore } from '@/stores/token'
+import { isAuthenticated } from '@/composables/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,15 +56,21 @@ const router = createRouter({
   ],
 })
 
-// 身分驗證
-router.beforeEach((to, from, next) => {
-  const tokenStore = useTokenStore()
-  const isAuthenticated = tokenStore.isAuthenticated
-  if (to.name !== 'login' && to.name !== 'register' && !isAuthenticated) {
-    next({ name: 'login' })
-  } else {
-    next()
+// 路由守衛
+router.beforeEach(async (to, from, next) => {
+  const isAuth = await isAuthenticated() // 權限判斷
+
+  // 如果沒有登入，且不是登入或註冊頁面，則跳轉到登入頁面
+  if (to.name !== 'login' && to.name !== 'register' && !isAuth) {
+    return (location.href = '/login')
   }
+
+  // 如果已經登入，且是在登入或註冊頁面，則跳轉到聊天頁面
+  if (isAuth && (to.name === 'login' || to.name === 'register')) {
+    return (location.href = '/channels/@me')
+  }
+
+  next()
 })
 
 export default router
