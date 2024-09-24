@@ -3,7 +3,14 @@ import { useTokenStore } from '@/stores/token'
 import type { CSRFToken } from '@/types/auth'
 import { generateCSRFToken, refreshAccessToken, logout } from '@/composables/auth'
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_DOMAIN = import.meta.env.VITE_API_DOMAIN
+let API_URL = ''
+if (import.meta.env.ONLINE) {
+  API_URL = 'https://' + API_DOMAIN
+} else {
+  API_URL = 'http://' + API_DOMAIN
+}
+
 const needsAuthRoutes = ['/auth']
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
