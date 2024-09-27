@@ -1,0 +1,217 @@
+@mixin border($color: $lineColor, $direction: all, $width: 1px, $style: solid) {
+  @if ($direction == all) {
+      border-style: $style;
+      border-color: $color;
+      border-width: $width;
+  }
+
+  @else if($direction == right) {
+      border-right: $width $style $color;
+  }
+
+  @else if($direction == left) {
+      border-left: $width $style $color;
+  }
+
+  @else if($direction == top) {
+      border-top: $width $style $color;
+  }
+
+  @else if($direction == bottom) {
+      border-bottom: $width $style $color;
+  }
+}
+
+@mixin borderTriangle($direction: top, $color: $lineColor, $width: 10px) {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: $width;
+  border-color: transparent;
+  border-#{$direction}-color: $color;
+}
+
+$arrowRight: 45deg;
+$arrowLeft: -135deg;
+$arrowTop: -45deg;
+$arrowBottom: 135deg;
+
+@mixin borderArrow($direction: $arrowRight, $color: $lineColor, $size: 10px, $width: 2px) {
+  width: $size;
+  height: $size;
+  border-style: solid;
+  border-width: $width $width 0 0;
+  border-color: $color $color transparent transparent;
+  transform: rotate($direction);
+}
+
+@mixin borderArrowCenterX($size: 10px, $width: 2px, $color: $lineColor, $direction: $arrowRight, $top: unset, $bottom: unset) {
+  width: $size;
+  height: $size;
+  border-style: solid;
+  border-width: $width $width 0 0;
+  border-color: $color $color transparent transparent;
+  position: absolute;
+  left: 50%;
+  top: $top;
+  bottom: $bottom;
+  transform: translateX(-50%) rotate($direction);
+}
+
+@mixin borderArrowCenterY($size: 10px, $width: 2px, $color: $lineColor, $direction: $arrowRight, $left: unset, $right: unset) {
+  width: $size;
+  height: $size;
+  border-style: solid;
+  border-width: $width $width 0 0;
+  border-color: $color $color transparent transparent;
+  position: absolute;
+  top: 50%;
+  left: $left;
+  right: $right;
+  transform: translateY(-50%) rotate($direction);
+}
+
+// mixin
+$light: 300;
+$regular: 400;
+$medium: 500;
+$semiBold: 600;
+$bold: 700;
+$extraBold: 800;
+
+@mixin font($color: $mainColor, $size: 16, $weight: $regular, $lineHeight: $size, $letterSpacing: 5, $family: $mainFont) {
+  color: $color;
+  font-size: #{$size}px;
+  font-weight: $weight;
+  line-height: calc(#{$lineHeight} / #{$size});
+  letter-spacing: calc(#{$size} * #{$letterSpacing} / 1000 * 1px);
+  font-family: $family;
+  // 有需要自行打開並新增在變數列
+  // font-style: $style;
+  // text-align: $textAlign;
+  // writing-mode: $writingMode;
+  // word-break: $wordBreak;
+}
+
+@mixin flex($display: flex, $justifyContent: flex-start, $alignItems: flex-start, $flexDirection: row, $flexWrap: nowrap) {
+  display: $display;
+  justify-content: $justifyContent;
+  align-items: $alignItems;
+  flex-direction: $flexDirection;
+  flex-wrap: $flexWrap;
+}
+
+@mixin position($position: relative, $top: unset, $left: unset, $right: unset, $bottom: unset, $translateX: 0, $translateY: 0, $zIndex: 1) {
+  position: $position;
+  top: $top;
+  left: $left;
+  right: $right;
+  bottom: $bottom;
+  transform: translate($translateX, $translateY);
+  z-index: $zIndex;
+}
+
+@mixin grid($display: grid, $gridTemplateColumns: 1fr, $gridTemplateRows: auto, $gap: 0, $alignItems: flex-start) {
+  display: $display;
+  grid-template-columns: $gridTemplateColumns;
+  grid-template-rows: $gridTemplateRows;
+  gap: $gap;
+  align-items: $alignItems;
+}
+
+@mixin transition($time: 0.5s, $delay: 0s, $timingFunction: ease-in-out) {
+  transition: all $time;
+  transition-delay: $delay;
+  transition-timing-function: $timingFunction;
+}
+
+@mixin animeFade($delay: 0s, $time: 0.5s, $distance: 0px, $timingFunction: ease-in-out) {
+  opacity: 0;
+  transform: translateY($distance);
+  transition: all $time;
+  transition-delay: $delay;
+  transition-timing-function: $timingFunction;
+}
+
+@mixin animeFadeRow($delay: 0s, $time: 0.5s, $distance: 0px, $timingFunction: ease-in-out) {
+  opacity: 0;
+  transform: translateX($distance);
+  transition: all $time;
+  transition-delay: $delay;
+  transition-timing-function: $timingFunction;
+}
+
+@mixin fadeIn {
+  opacity: 1;
+  transform: translate(0);
+}
+
+@mixin maxLine($line) {
+  display: -webkit-box;
+  -webkit-line-clamp: $line;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@mixin linearGradient($color1: #02478d, $color2: #49c6cb, $direction: to right) {
+  background: linear-gradient($direction, $color1, $color2);
+}
+
+@mixin textGradient($color1: #02478d, $color2: #49c6cb, $direction: to right) {
+  color: transparent;
+  background: linear-gradient($direction, $color1, $color2);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@mixin dash($color: #000000, $ratio: 50%, $direction: right, $width: 10px) {
+  background-image: linear-gradient(to #{$direction}, $color 0%, $color $ratio, transparent $ratio, transparent 100%);
+
+  @if ($direction == top) or ($direction == bottom) {
+      background-size: 100% $width;
+      background-repeat: repeat-y;
+  }
+
+  @else if($direction == right) or ($direction == left) {
+      background-size: $width 100%;
+      background-repeat: repeat-x;
+  }
+}
+
+@mixin dashCircle($color: #000000, $dotSize: 2px, $direction: right, $width: 10px) {
+  background-image: radial-gradient(circle, $color calc(#{$dotSize} - 1px), transparent $dotSize);
+
+  @if ($direction == top) or ($direction == bottom) {
+      background-size: 100% $width;
+      background-repeat: repeat-y;
+  }
+
+  @else if($direction == right) or ($direction == left) {
+      background-size: $width 100%;
+      background-repeat: repeat-x;
+  }
+}
+
+@mixin linkWrap {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+@mixin turnWhite {
+  filter: brightness(0) invert(1);
+}
+
+@mixin bgSetting {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -999;
+  pointer-events: none;
+}

@@ -3,9 +3,9 @@ import { ref } from 'vue'
 import { useTokenStore } from './token'
 
 interface Message {
-  id: number
+  // id: number
   content: string
-  userId: string
+  // userId: string
   timestamp: Date
 }
 
@@ -24,23 +24,25 @@ export const useChatStore = defineStore('chat', () => {
   }
   API_URL = API_URL + '/auth/ws'
   API_URL = API_URL + `?token=${accessToken}`
+  API_URL = API_URL + `&username=ray`
   const socket = new WebSocket(API_URL)
 
-  // socket.onmessage = (event: MessageEvent) => {
-  //   const message = JSON.parse(event.data)
-  //   console.log(message)
-  // }
+  socket.onmessage = (event: MessageEvent) => {
+    const message = JSON.parse(event.data)
+    console.log(message)
+  }
 
-  // function addMessage(message: Message) {
-  //   messages.value.push(message)
+  function addMessage(message: Message) {
+    messages.value.push(message)
 
-  //   // Send the message to the server
-  //   socket.send(JSON.stringify(message))
-  // }
+    // Send the message to the server
+    console.log(JSON.stringify(message));
+    socket.send(JSON.stringify(message))
+  }
 
   // function setCurrentChannel(channel: string) {
   //   currentChannel.value = channel
   // }
 
-  return { messages, channels, currentChannel }
+  return { messages, channels, currentChannel, addMessage }
 })

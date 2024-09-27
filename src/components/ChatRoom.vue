@@ -109,11 +109,12 @@
       return
     }
 
+    console.log(message)
+
     chatStore.addMessage({
-      id: 1,
       content: message,
-      userId: 'abc',
-      timestamp: new Date(),
+      // userId: 'abc',
+      timestamp: new Date().toISOString(),
     })
   }
 
