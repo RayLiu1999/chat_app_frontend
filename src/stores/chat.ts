@@ -1,13 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useTokenStore } from './token'
-
-interface Message {
-  // id: number
-  content: string
-  // userId: string
-  timestamp: Date
-}
+import type { Message } from '@/types/chat'
 
 export const useChatStore = defineStore('chat', () => {
   const messages = ref<Message[]>([])
@@ -36,7 +30,7 @@ export const useChatStore = defineStore('chat', () => {
     messages.value.push(message)
 
     // Send the message to the server
-    console.log(JSON.stringify(message));
+    console.log(JSON.stringify(message))
     socket.send(JSON.stringify(message))
   }
 

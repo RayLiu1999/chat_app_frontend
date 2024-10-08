@@ -47,7 +47,7 @@
       <i class="fas fa-smile weak-text"> </i>
     </div>
   </div>
-  <!-- Userfo -->
+  <!-- User info -->
   <div class="bg-#080a28 w-60 p-4">
     <div class="flex flex-col items-center">
       <div class="default-image w-40px h-40px">
@@ -112,9 +112,8 @@
     console.log(message)
 
     chatStore.addMessage({
-      content: message,
-      // userId: 'abc',
-      timestamp: new Date().toISOString(),
+      text: message,
+      timestamp: Date.now(),
     })
   }
 
@@ -139,6 +138,6 @@
 
 <style lang="scss">
   .custom-scrollbar {
-    // background-color: #080a28;
+    //background-color: #080a28;
   }
 </style>

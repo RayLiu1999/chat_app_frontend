@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useTokenStore } from '@/stores/token'
+import { useUserStore } from '@/stores/user'
 import type { CSRFToken } from '@/types/auth'
 import { generateCSRFToken, refreshAccessToken, logout } from '@/composables/auth'
 
@@ -37,8 +37,8 @@ const api = axios.create({
 // 設置請求攔截器，加入 access token
 api.interceptors.request.use(
   (config) => {
-    const tokenStore = useTokenStore()
-    const accessToken = tokenStore.accessToken
+    const userStore = useUserStore()
+    const accessToken = userStore.accessToken
 
     // 判斷是否需要權限驗證的邏輯
     const needsAuth = needsAuthRoutes.some((path) => config.url?.startsWith(path))
@@ -80,7 +80,7 @@ api.interceptors.response.use(
 
     if (needsAuth && response.status === 401) {
       // 確保只針對特定路由重打刷新 token
-      if (originalRequest.url !== '/auth/refresh') {
+      if (originalRequest.url !== '/refresh_token') {
         if (!isRefreshing) {
           isRefreshing = true
           // 發送刷新 token 請求

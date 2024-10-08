@@ -1,7 +1,7 @@
 import { generateRandomString } from './utils'
 import type { CSRFToken } from '@/types/auth'
 import api from '@/api/axios'
-import { useTokenStore } from '@/stores/token'
+import { useUserStore } from '@/stores/user'
 
 // 生成 CSRF token
 export function generateCSRFToken(): CSRFToken {
@@ -19,10 +19,10 @@ export function generateCSRFToken(): CSRFToken {
 // 刷新 access token
 export async function refreshAccessToken(): Promise<string> {
   try {
-    const response = await api.post('/auth/refresh')
+    const response = await api.post('/refresh_token')
     const token = response.data.access_token
-    const tokenStore = useTokenStore()
-    tokenStore.setAccessToken(token)
+    const userStore = useUserStore()
+    userStore.setAccessToken(token)
 
     return token
   } catch (error) {
@@ -38,8 +38,8 @@ export function logout(): void {
 // 判斷目前是否有權限
 export async function isAuthenticated(): Promise<boolean> {
   try {
-    const tokenStore = useTokenStore()
-    const accessToken = tokenStore.accessToken
+    const userStore = useUserStore()
+    const accessToken = userStore.accessToken
 
     // 判斷 token 是否過期
     if (accessToken) {
@@ -54,7 +54,7 @@ export async function isAuthenticated(): Promise<boolean> {
 
       const token = await refreshAccessToken()
       if (token) {
-        tokenStore.setAccessToken(token)
+        userStore.setAccessToken(token)
         return true
       } else {
         return false
@@ -62,7 +62,7 @@ export async function isAuthenticated(): Promise<boolean> {
     } else {
       const token = await refreshAccessToken()
       if (token) {
-        tokenStore.setAccessToken(token)
+        userStore.setAccessToken(token)
         return true
       } else {
         return false

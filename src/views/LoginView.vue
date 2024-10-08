@@ -55,7 +55,7 @@
   import { ref } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import api from '@/api/axios'
-  import { useTokenStore } from '@/stores/token'
+  import { useUserStore } from '@/stores/user'
 
   const router = useRouter()
 
@@ -114,8 +114,17 @@
         })
         .then((response) => {
           // 存取 token
-          const tokenStore = useTokenStore()
-          tokenStore.setAccessToken(response.data.access_token)
+          const userStore = useUserStore()
+          userStore.setAccessToken(response.data.access_token)
+
+          api
+            .get('/user')
+            .then((response) => {
+              userStore.setUser(response.data)
+            })
+            .catch((error) => {
+              console.error(error.response.data)
+            })
 
           // 登入成功，導向使用者首頁
           router.push({ path: '/channels/@me' })
