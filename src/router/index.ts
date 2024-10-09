@@ -8,7 +8,7 @@ import ChatList from '@/components/ChatList.vue'
 import ChatRoom from '@/components/ChatRoom.vue'
 import ChannelList from '@/components/ChannelList.vue'
 import FriendList from '@/components/FriendList.vue'
-import { isAuthenticated } from '@/composables/auth'
+import { useUserStore } from '@/stores/user'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,7 +58,8 @@ const router = createRouter({
 
 // 路由守衛
 router.beforeEach(async (to, from, next) => {
-  const isAuth = await isAuthenticated() // 權限判斷
+  const userStore = useUserStore()
+  const isAuth = await userStore.isAuthenticated() // 權限判斷
 
   // 如果沒有登入，且不是登入或註冊頁面，則跳轉到登入頁面
   if (to.name !== 'login' && to.name !== 'register' && !isAuth) {

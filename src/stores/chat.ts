@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useTokenStore } from './token'
+import { useUserStore } from '@/stores/user'
 import type { Message } from '@/types/chat'
 
 export const useChatStore = defineStore('chat', () => {
   const messages = ref<Message[]>([])
   const channels = ref(['general', 'random', 'help'])
   const currentChannel = ref('general')
-  const tokenStore = useTokenStore()
-  const accessToken = tokenStore.accessToken
+  const userStore = useUserStore()
+  const accessToken = userStore.accessToken
   const API_DOMAIN = import.meta.env.VITE_API_DOMAIN
   let API_URL = ''
   if (import.meta.env.ONLINE) {

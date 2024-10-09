@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { useUserStore } from '@/stores/user'
 import type { CSRFToken } from '@/types/auth'
-import { generateCSRFToken, refreshAccessToken, logout } from '@/composables/auth'
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN
 let API_URL = ''
@@ -45,7 +44,7 @@ api.interceptors.request.use(
 
     // get以外皆需要CSRF token
     if (config.method !== 'get') {
-      const token = generateCSRFToken()
+      const token = userStore.generateCSRFToken()
       const csrfToken: CSRFToken = {
         name: '',
         value: '',
@@ -72,6 +71,7 @@ api.interceptors.response.use(
   async (error) => {
     const { config, response } = error
     const originalRequest = config
+    const userStore = useUserStore()
 
     // 判斷是否需要權限驗證的邏輯
     const needsAuth = ['/login', '/register', '/profile'].some((path) =>
@@ -84,7 +84,8 @@ api.interceptors.response.use(
         if (!isRefreshing) {
           isRefreshing = true
           // 發送刷新 token 請求
-          return refreshAccessToken()
+          return userStore
+            .refreshAccessToken()
             .then((newToken) => {
               isRefreshing = false
               onRefreshed(newToken) // 刷新後，通知其他等待的請求
@@ -92,7 +93,7 @@ api.interceptors.response.use(
             })
             .catch(() => {
               isRefreshing = false
-              logout() // 如果刷新失敗，登出
+              userStore.logout() // 如果刷新失敗，登出
               return Promise.reject(error)
             })
         }

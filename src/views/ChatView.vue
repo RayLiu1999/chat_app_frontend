@@ -15,11 +15,16 @@
 </template>
 
 <script lang="ts" setup>
-  // import { ref, onMounted, watch, nextTick } from 'vue'
-  // import { useChatStore } from '@/stores/chat'
+  import { ref, onMounted, watch, nextTick } from 'vue'
+  import { useChatStore } from '@/stores/chat'
+  import { useUserStore } from '@/stores/user'
 
   // 使用 Pinia Store
-  // const chatStore = useChatStore()
+  const userStore = useUserStore()
+
+  onMounted(() => {
+    userStore.fetchUser()
+  })
 </script>
 
 <style lang="scss"></style>

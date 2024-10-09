@@ -117,15 +117,6 @@
           const userStore = useUserStore()
           userStore.setAccessToken(response.data.access_token)
 
-          api
-            .get('/user')
-            .then((response) => {
-              userStore.setUser(response.data)
-            })
-            .catch((error) => {
-              console.error(error.response.data)
-            })
-
           // 登入成功，導向使用者首頁
           router.push({ path: '/channels/@me' })
         })
