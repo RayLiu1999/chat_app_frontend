@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-#0d1245 flex h-screen w-screen items-center justify-center">
+  <div class="bg-#0c0c31 flex h-screen w-screen items-center justify-center">
     <RouterLink class="text-white" to="/channels">
       <div class="absolute left-8 top-8 flex items-center">
         <span class="mr-1">
@@ -12,7 +12,7 @@
       <div class="w-100 mr-auto">
         <h2 class="mb-4 text-2xl font-bold text-white">建立新帳號</h2>
         <form>
-          <div class="mb-4" v-for="(item, index) in columns" :key="index">
+          <div v-for="(item, index) in columns" :key="index" class="mb-4">
             <label
               class="mb-1 block flex items-center"
               :for="item.name"
@@ -28,10 +28,10 @@
             </label>
             <input
               :id="item.name"
+              v-model="item.value"
               class="w-full rounded bg-gray-700 p-2 text-white"
               :name="item.name"
               :type="item.type"
-              v-model="item.value"
             />
             <p class="text mt-1 text-sm">{{ item.remark }}</p>
           </div>
@@ -77,9 +77,9 @@
       error: false,
       remark: '',
     },
-    display_name: {
+    nick_name: {
       label: '顯示名稱',
-      name: 'display_name',
+      name: 'nick_name',
       type: 'text',
       required: false,
       value: '',
@@ -129,7 +129,7 @@
       api
         .post('/register', {
           email: columns.value.email.value,
-          display_name: columns.value.display_name.value,
+          nick_name: columns.value.nick_name.value,
           username: columns.value.username.value,
           password: columns.value.password.value,
         })
@@ -140,10 +140,10 @@
           router.push({ path: '/login' })
         })
         .catch((error) => {
-          console.error(error.response.data)
+          // console.error(error.response.data)
         })
     } catch (error) {
-      console.error('Error:', error)
+      // console.error('Error:', error)
     }
   }
 </script>

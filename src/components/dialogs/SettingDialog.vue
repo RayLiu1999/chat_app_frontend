@@ -6,21 +6,21 @@
       destroy-on-close
       center
       :fullscreen="true"
-      class="custom-dialog"
+      class="custom-full-dialog"
       :show-close="false"
     >
       <template #header>
-        <div class="custom-dialog-header"></div>
+        <div></div>
       </template>
       <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="bg-#0d1245 w-1/3 p-8">
+        <div class="bg-#0c0c31 w-1/3 p-8">
           <div class="ml-auto w-1/3 justify-items-end">
-            <div class="relative mb-4">
+            <div class="mb-4 w-full">
               <input class="bg-gray-8 text w-full rounded p-2" placeholder="搜尋" type="text" />
               <i class="fas fa-search text-gray-4 absolute right-3 top-3"> </i>
             </div>
-            <ul class="space-y-2">
+            <ul class="w-full space-y-2">
               <span class="text-size-xs text-gray-4 p-2">使用者設定</span>
               <li class="button-current text p-2" @click="currentComponent = AccountSetting">
                 我的帳號

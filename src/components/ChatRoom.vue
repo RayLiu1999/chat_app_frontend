@@ -4,8 +4,8 @@
     <!-- Chat Header -->
     <div class="bg-#080a28 flex items-center justify-between p-4">
       <div class="flex items-center space-x-2">
-        <div class="default-image w-40px h-40px">
-          <img alt="User" class="h-full w-full" src="@/assets/images/user1.jpg" />
+        <div class="default-image size-6">
+          <img alt="User" class="size-6" src="@/assets/images/user1.jpg" />
         </div>
         <span class="text cursor-pointer font-bold"> ホタル </span>
         <span class="weak-text"> | </span>
@@ -16,10 +16,10 @@
     <el-scrollbar ref="scrollbarRef" :always="true" class="custom-scrollbar">
       <div ref="innerRef" class="bg-#080a28 flex-1 space-y-4 overflow-y-auto p-4">
         <div v-for="item in 20" :key="item" class="flex items-start space-x-2">
-          <div class="default-image w-40px h-40px mr-2">
+          <div class="default-image mr-2 size-10">
             <img
               alt="User"
-              class="h-full w-full cursor-pointer"
+              class="size-10 cursor-pointer"
               src="@/assets/images/user1.jpg"
               @click="UserProfileVisible = true"
             />
@@ -47,38 +47,18 @@
       <i class="fas fa-smile weak-text"> </i>
     </div>
   </div>
-  <!-- User info -->
-  <div class="bg-#080a28 w-60 p-4">
-    <div class="flex flex-col items-center">
-      <div class="default-image w-40px h-40px">
-        <img alt="User" class="mb-4 h-full w-full" src="@/assets/images/user1.jpg" />
-      </div>
-      <div class="text-center">
-        <div class="weak-text">ホタル</div>
-        <div class="weak-text">ho_ta_ru_firefly</div>
-      </div>
-    </div>
-    <div class="mt-4">
-      <div class="weak-text">啟動日期</div>
-      <div class="weak-text">2018年10月18日</div>
-    </div>
-    <div class="mt-4">
-      <div class="weak-text">10 個共同伺服器</div>
-    </div>
-    <div class="mt-4">
-      <div class="weak-text">5 位共同好友</div>
-    </div>
-  </div>
   <UserProfileDialog :dialog-visible="UserProfileVisible" @update-visible="handleUpdate" />
 </template>
 
 <script lang="ts" setup>
   import { ref, onMounted, watch, nextTick } from 'vue'
   import { useChatStore } from '@/stores/chat'
+  import { useUserStore } from '@/stores/user'
   import { ElScrollbar } from 'element-plus'
 
   // 使用 Pinia Store
   const chatStore = useChatStore()
+  const userStore = useUserStore()
 
   // 使用 ref 來追蹤 UserProfileDialog 的顯示狀態
   const UserProfileVisible = ref(false)
@@ -109,9 +89,11 @@
       return
     }
 
-    console.log(message)
-
     chatStore.addMessage({
+      type: 'dm',
+      room_id: 'fdssd',
+      server_id: 'fsdfsdfdsf',
+      user_id: userStore!.userData!.id,
       text: message,
       timestamp: Date.now(),
     })

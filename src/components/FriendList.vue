@@ -21,28 +21,35 @@
     </div>
     <!-- Search Bar -->
     <div class="flex items-center p-2">
-      <input class="bg-#14175a text w-full rounded p-2" placeholder="搜尋" type="text" />
+      <input
+        class="bg-#14175a text w-full rounded p-2"
+        placeholder="搜尋"
+        type="text"
+        @contextmenu.stop
+      />
       <i class="fas fa-search weak-text ml-2"> </i>
     </div>
     <!-- Friends List -->
-    <div class="flex-1 overflow-y-auto p-4">
-      <div class="weak-text mb-2">線上 - 4</div>
-      <div class="space-y-4">
-        <!-- Friend Item -->
-        <div v-for="item in 10" :key="item" class="flex items-center justify-between rounded p-2">
-          <div class="flex items-center space-x-4">
-            <div class="default-image w-40px h-40px">
-              <img alt="User" class="h-full w-full cursor-pointer" src="" @error="handleError" />
+    <el-scrollbar :always="true">
+      <div class="flex-1 overflow-y-auto p-4">
+        <div class="weak-text mb-2">線上 - 4</div>
+        <div class="space-y-4">
+          <!-- Friend Item -->
+          <div v-for="item in 10" :key="item" class="flex items-center justify-between rounded p-2">
+            <div class="flex items-center space-x-4">
+              <div class="default-image size-10">
+                <img alt="User" class="size-10 cursor-pointer" src="" @error="handleError" />
+              </div>
+              <div>
+                <div class="text">Ray</div>
+                <div class="weak-text text-sm">正在玩 Apex Legends</div>
+              </div>
             </div>
-            <div>
-              <div class="text">Ray</div>
-              <div class="weak-text text-sm">正在玩 Apex Legends</div>
-            </div>
+            <i class="fas fa-ellipsis-h weak-text"> </i>
           </div>
-          <i class="fas fa-ellipsis-h weak-text"> </i>
         </div>
       </div>
-    </div>
+    </el-scrollbar>
   </div>
 </template>
 

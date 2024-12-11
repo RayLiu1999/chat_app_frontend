@@ -11,7 +11,7 @@
           src="@/assets/images/GTFy9B3aQAAz2JI.jpg"
         />
       </div>
-      <div class="bottom--40px absolute left-4 flex items-center space-x-2">
+      <div class="bottom--48px absolute left-4 flex items-center space-x-2">
         <img
           alt="Profile picture"
           class="w-80px h-80px border-#0e0b17 rounded-full border-4"

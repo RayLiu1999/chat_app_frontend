@@ -5,34 +5,60 @@ import api from '@/api/axios'
 import { generateRandomString } from '@/composables/utils'
 
 export const useUserStore = defineStore('user', () => {
-  const user = ref<User | null>(null)
+  const userData = ref<User | null>(null)
   const accessToken = ref<string | null>(null)
 
-  // 清除 user
-  const clearUser = () => {
-    user.value = null
+  /**
+   * API Methods
+   */
+
+  // 登入
+  const login = async (email: string, password: string): Promise<void> => {
+    try {
+      const response = await api.post('/login', {
+        email,
+        password,
+      })
+
+      if (response.status !== 200) {
+        throw new Error('Failed to login')
+      }
+
+      // const token = response.data.access_token
+      // setAccessToken(token) // 設置 token
+      // const userData = await fetchUser() // 取得 user
+      // setUserData(userData) // 設置 user
+
+      location.href = '/channels/@me'
+    } catch (error) {
+      console.error('Failed to login:', error)
+    }
   }
 
-  // 設置 token
-  const setAccessToken = (token: string) => {
-    accessToken.value = token
+  // 登出
+  const logout = (): void => {
+    api.post('/logout')
   }
 
-  // 清除 token
-  const clearAccessToken = () => {
-    accessToken.value = null
-  }
-
+  // 取得 user
   const fetchUser = async () => {
     try {
       const response = await api.get('/user')
-      user.value = response.data
-      console.log(user.value)
+      userData.value = response.data
+
+      return response.data
     } catch (error) {
+      // 登出
+      clearUserData()
+      clearAccessToken()
       console.error('Failed to fetch user:', error)
-      throw error
+      logout()
     }
   }
+
+  /**
+   * Methods
+   */
 
   // 生成 CSRF token
   const generateCSRFToken = (): CSRFToken => {
@@ -57,13 +83,9 @@ export const useUserStore = defineStore('user', () => {
 
       return token
     } catch (error) {
-      console.error('Failed to refresh access token:', error)
+      // console.error('Failed to refresh access token:', error)
       throw error
     }
-  }
-
-  const logout = (): void => {
-    api.post('/logout')
   }
 
   // 判斷目前是否有權限
@@ -101,21 +123,49 @@ export const useUserStore = defineStore('user', () => {
       }
     } catch (error) {
       // 如果解碼失敗，返回未驗證狀態
-      console.error('Invalid access token:', error)
+      // console.error('Invalid access token:', error)
       return false
     }
   }
 
+  /**
+   * 操作資料 Methods
+   */
+  // 設置 user
+  const setUserData = (user: User) => {
+    userData.value = user
+  }
+
+  // 清除 user
+  const clearUserData = () => {
+    userData.value = null
+  }
+
+  // 設置 token
+  const setAccessToken = (token: string) => {
+    accessToken.value = token
+  }
+
+  // 清除 token
+  const clearAccessToken = () => {
+    accessToken.value = null
+  }
+
   return {
-    user,
-    clearUser,
+    // Data
+    userData,
     accessToken,
+    // API
+    login,
+    logout,
+    fetchUser,
+    // Methods
+    setUserData,
+    clearUserData,
     setAccessToken,
     clearAccessToken,
-    fetchUser,
     generateCSRFToken,
     refreshAccessToken,
-    logout,
     isAuthenticated,
   }
 })

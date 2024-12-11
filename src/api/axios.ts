@@ -10,7 +10,7 @@ if (import.meta.env.ONLINE) {
   API_URL = 'http://' + API_DOMAIN
 }
 
-const needsAuthRoutes = ['/auth']
+const needsAuthRoutes = ['/user', '/logout', '/channels', '/servers']
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
 

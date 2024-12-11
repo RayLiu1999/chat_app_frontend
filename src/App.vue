@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { RouterLink, RouterView } from 'vue-router'
-  import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
@@ -17,7 +16,7 @@
     </div>
   </header> -->
   <!-- <div class="w-100% flex"> -->
-  <RouterView />
+  <RouterView @contextmenu.prevent />
   <!-- </div> -->
 </template>
 
@@ -36,12 +35,31 @@
     position: relative;
   }
 
+  .el-dialog.custom-full-dialog {
+    padding: 0;
+    border-radius: 0.5rem;
+    background-color: #333354;
+    background-color: #01013b;
+  }
+
   .el-dialog.custom-dialog {
     padding: 0;
     border-radius: 0.5rem;
     background-color: #333354;
     background-color: #01013b;
-    // background-color: #010152;
+    width: var(--dialog-width);
+    max-width: 90%;
+  }
+
+  @media (min-width: 768px) {
+    .el-dialog.custom-dialog {
+      --dialog-width: 50%;
+    }
+  }
+  @media (min-width: 1024px) {
+    .el-dialog.custom-dialog {
+      --dialog-width: 40%;
+    }
   }
 
   /* header {

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-#0d1245 flex h-screen w-screen items-center justify-center">
+  <div class="bg-#0c0c31 flex h-screen w-screen items-center justify-center">
     <RouterLink class="text-white" to="/channels">
       <div class="absolute left-8 top-8 flex items-center">
         <span class="mr-1">
@@ -13,7 +13,7 @@
         <h2 class="mb-2 text-2xl font-bold text-white">歡迎回來！</h2>
         <p class="mb-6 text-gray-400">我們很高興又見到您了！</p>
         <form>
-          <div class="mb-4" v-for="(item, index) in columns" :key="index">
+          <div v-for="(item, index) in columns" :key="index" class="mb-4">
             <label
               class="mb-1 block flex items-center"
               :for="item.name"
@@ -29,10 +29,10 @@
             </label>
             <input
               :id="item.name"
+              v-model="item.value"
               class="w-full rounded bg-gray-700 p-2 text-white"
               :name="item.name"
               :type="item.type"
-              v-model="item.value"
             />
           </div>
           <button
@@ -106,25 +106,8 @@
       return
     }
 
-    try {
-      api
-        .post('/login', {
-          email: columns.value.email.value,
-          password: columns.value.password.value,
-        })
-        .then((response) => {
-          // 存取 token
-          const userStore = useUserStore()
-          userStore.setAccessToken(response.data.access_token)
-
-          // 登入成功，導向使用者首頁
-          router.push({ path: '/channels/@me' })
-        })
-        .catch((error) => {
-          console.error(error.response.data)
-        })
-    } catch (error) {
-      console.error('Error:', error)
-    }
+    // 登入
+    const userStore = useUserStore()
+    userStore.login(columns.value.email.value, columns.value.password.value)
   }
 </script>

@@ -9,7 +9,7 @@
             src="@/assets/images/GTFy9B3aQAAz2JI.jpg"
           />
         </div>
-        <div class="bottom--40px absolute left-4 flex items-center space-x-2">
+        <div class="bottom--48px absolute left-4 flex items-center space-x-2">
           <img
             alt="Profile picture"
             class="w-80px h-80px border-#0e0b17 rounded-full border-4"
@@ -55,7 +55,7 @@
           <div class="flex items-center space-x-2">
             <img
               alt="Friend 1 profile picture"
-              class="w-40px h-40px rounded-full"
+              class="size-12 rounded-full"
               height="40"
               src="https://placehold.co/40x40"
               width="40"
@@ -65,7 +65,7 @@
           <div class="flex items-center space-x-2">
             <img
               alt="Friend 2 profile picture"
-              class="w-40px h-40px rounded-full"
+              class="size-12 rounded-full"
               src="https://placehold.co/40x40"
             />
             <span> Aluo </span>
@@ -73,7 +73,7 @@
           <div class="flex items-center space-x-2">
             <img
               alt="Friend 3 profile picture"
-              class="w-40px h-40px rounded-full"
+              class="size-12 rounded-full"
               height="40"
               src="https://placehold.co/40x40"
               width="40"
@@ -83,7 +83,7 @@
           <div class="flex items-center space-x-2">
             <img
               alt="Friend 4 profile picture"
-              class="w-40px h-40px rounded-full"
+              class="size-12 rounded-full"
               height="40"
               src="https://placehold.co/40x40"
               width="40"
@@ -93,7 +93,7 @@
           <div class="flex items-center space-x-2">
             <img
               alt="Friend 5 profile picture"
-              class="w-40px h-40px rounded-full"
+              class="size-12 rounded-full"
               height="40"
               src="https://placehold.co/40x40"
               width="40"

@@ -9,6 +9,8 @@ import ChatRoom from '@/components/ChatRoom.vue'
 import ChannelList from '@/components/ChannelList.vue'
 import FriendList from '@/components/FriendList.vue'
 import { useUserStore } from '@/stores/user'
+import MemberList from '@/components/MemberList.vue'
+import UserProfile from '@/components/UserProfile.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,7 +31,7 @@ const router = createRouter({
       component: ChatView,
       children: [
         {
-          path: '',
+          path: '/',
           redirect: '/channels/@me', // 默認重定向到 @me
         },
         {
@@ -40,10 +42,19 @@ const router = createRouter({
           },
         },
         {
-          path: '@me/:id',
+          path: '@me/:id([a-zA-Z0-9]+)',
+          components: {
+            chatList: ChatList,
+            chatRoom: ChatRoom,
+            userProfile: UserProfile,
+          },
+        },
+        {
+          path: ':id([a-zA-Z0-9]+)',
           components: {
             channelList: ChannelList,
             chatRoom: ChatRoom,
+            memberList: MemberList,
           },
         },
       ],
@@ -69,6 +80,12 @@ router.beforeEach(async (to, from, next) => {
   // 如果已經登入，且是在登入或註冊頁面，則跳轉到聊天頁面
   if (isAuth && (to.name === 'login' || to.name === 'register')) {
     return (location.href = '/channels/@me')
+  }
+
+  // 取得 user 資料
+  if (isAuth && userStore.userData === null) {
+    const userData = await userStore.fetchUser()
+    userStore.setUserData(userData)
   }
 
   next()
