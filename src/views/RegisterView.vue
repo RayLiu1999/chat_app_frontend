@@ -24,7 +24,9 @@
                 class="bi bi-asterisk"
                 style="font-size: 0.4rem; margin-left: 0.25rem; color: red"
               ></i>
-              <span v-if="item.error" class="font-italic ml-1 text-red-400">- 必要</span>
+              <span v-if="item.error" class="font-italic ml-1 text-red-400"
+                >- {{ item.errorMessage }}</span
+              >
             </label>
             <input
               :id="item.name"
@@ -32,8 +34,9 @@
               class="w-full rounded bg-gray-700 p-2 text-white"
               :name="item.name"
               :type="item.type"
+              :placeholder="item.placeholder"
             />
-            <p class="text mt-1 text-sm">{{ item.remark }}</p>
+            <p class="text mt-1 text-sm text-gray-400">{{ item.remark }}</p>
           </div>
           <button
             class="hover-bg-blue-700 mt-2 w-full rounded bg-blue-600 p-2 text-white"
@@ -54,8 +57,10 @@
   import { ref } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
   import api from '@/api/axios'
+  import { useResMsgStore } from '@/stores/res_msg'
 
   const router = useRouter()
+  const resMsgStore = useResMsgStore()
 
   interface Column {
     label: string
@@ -64,7 +69,9 @@
     required: boolean
     value: string
     error: boolean
+    errorMessage: string
     remark: string
+    placeholder: string
   }
 
   const columns = ref<Record<string, Column>>({
@@ -75,7 +82,9 @@
       required: true,
       value: '',
       error: false,
+      errorMessage: '必要',
       remark: '',
+      placeholder: '請輸入電子信箱',
     },
     nick_name: {
       label: '顯示名稱',
@@ -84,7 +93,9 @@
       required: false,
       value: '',
       error: false,
+      errorMessage: '',
       remark: '其他人會看見您的顯示名稱，可使用特殊字元和表情符號。',
+      placeholder: '請輸入顯示名稱（可選）',
     },
     username: {
       label: '使用者名稱',
@@ -93,7 +104,9 @@
       required: true,
       value: '',
       error: false,
+      errorMessage: '必要',
       remark: '請只使用數字、字母、底線 _，或英文句號 (.)。',
+      placeholder: '請輸入使用者名稱',
     },
     password: {
       label: '密碼',
@@ -102,12 +115,20 @@
       required: true,
       value: '',
       error: false,
-      remark: '',
+      errorMessage: '必要',
+      remark: '密碼需包含至少6個字元。',
+      placeholder: '請輸入大於6位的密碼',
     },
   })
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault()
+
+    // 重置錯誤訊息
+    for (const key in columns.value) {
+      columns.value[key].error = false
+      columns.value[key].errorMessage = ''
+    }
 
     let error = false
 
@@ -115,35 +136,66 @@
     for (const key in columns.value) {
       if (columns.value[key].required && !columns.value[key].value) {
         columns.value[key].error = true
+        columns.value[key].errorMessage = '此欄位為必填'
         error = true
-      } else {
-        columns.value[key].error = false
       }
     }
 
-    if (error) {
+    if (error) return
+
+    // 驗證email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (columns.value.email.value && !emailRegex.test(columns.value.email.value)) {
+      columns.value.email.error = true
+      columns.value.email.errorMessage = '請輸入有效的電子郵件'
+      return
+    }
+
+    // 驗證密碼
+    if (columns.value.password.value && columns.value.password.value.length < 6) {
+      columns.value.password.error = true
+      columns.value.password.errorMessage = '密碼長度需大於6位'
+      return
+    }
+
+    // 驗證使用者名稱
+    const usernameRegex = /^[a-zA-Z0-9_.]+$/
+    if (columns.value.username.value && !usernameRegex.test(columns.value.username.value)) {
+      columns.value.username.error = true
+      columns.value.username.errorMessage = '只能使用字母、數字、底線或句點'
       return
     }
 
     try {
-      api
+      // 註冊請求
+      await api
         .post('/register', {
           email: columns.value.email.value,
-          nick_name: columns.value.nick_name.value,
+          nick_name: columns.value.nick_name.value || columns.value.username.value, // 如果沒有填寫顯示名稱，使用使用者名稱
           username: columns.value.username.value,
           password: columns.value.password.value,
         })
-        .then((response) => {
-          console.log(response.data)
-          // 註冊成功後，導向登入頁
-          alert('註冊成功！')
+        .then(() => {
+          // 註冊成功後，顯示成功訊息並導向登入頁
+          resMsgStore.showSuccess('註冊成功！請使用新帳號登入')
           router.push({ path: '/login' })
         })
-        .catch((error) => {
-          // console.error(error.response.data)
-        })
-    } catch (error) {
-      // console.error('Error:', error)
+    } catch (error: any) {
+      // 錯誤處理由 axios 攔截器處理，這裡處理特定業務邏輯錯誤
+      if (error.response?.data) {
+        const apiResponse = error.response.data
+
+        // 檢查特定錯誤並更新對應欄位的錯誤訊息
+        if (apiResponse.code === 3001) {
+          // 使用者名稱已存在
+          columns.value.username.error = true
+          columns.value.username.errorMessage = '此使用者名稱已被使用'
+        } else if (apiResponse.code === 3002) {
+          // 電子郵件已存在
+          columns.value.email.error = true
+          columns.value.email.errorMessage = '此電子郵件已被使用'
+        }
+      }
     }
   }
 </script>

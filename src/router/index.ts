@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ChatView from '../views/ChatView.vue'
@@ -9,6 +8,7 @@ import ChatRoom from '@/components/ChatRoom.vue'
 import ChannelList from '@/components/ChannelList.vue'
 import FriendList from '@/components/FriendList.vue'
 import { useUserStore } from '@/stores/user'
+import { useChatStore } from '@/stores/chat'
 import MemberList from '@/components/MemberList.vue'
 import UserProfile from '@/components/UserProfile.vue'
 
@@ -19,16 +19,26 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+      meta: {
+        requiresAuth: false,
+      },
     },
     {
       path: '/register',
       name: 'register',
       component: RegisterView,
+      meta: {
+        requiresAuth: false,
+      },
     },
     {
       path: '/channels',
       name: 'channels',
       component: ChatView,
+      meta: {
+        requiresAuth: true,
+        requiresWebSocket: true,
+      },
       children: [
         {
           path: '/',
@@ -71,24 +81,44 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
   const isAuth = await userStore.isAuthenticated() // 權限判斷
+  const chatStore = useChatStore()
 
-  // 如果沒有登入，且不是登入或註冊頁面，則跳轉到登入頁面
-  if (to.name !== 'login' && to.name !== 'register' && !isAuth) {
+  // 如果需要授權且已經登入，則繼續
+  if (to.meta.requiresAuth && isAuth) {
+    // 取得 user 資料
+    if (userStore.userData === null) {
+      const userData = await userStore.fetchUser()
+      userStore.setUserData(userData)
+    }
+
+    // 如果需要 WebSocket 連接且已經登入，則建立連接
+    if (to.meta.requiresWebSocket) {
+      // 連接 WebSocket
+      if (!chatStore.checkWsConnection()) {
+        chatStore.wsConnect()
+      }
+    }
+
+    next()
+  }
+
+  // 如果需要授權且未登入，則跳轉到登入頁面
+  if (to.meta.requiresAuth && !isAuth) {
     return (location.href = '/login')
   }
 
-  // 如果已經登入，且是在登入或註冊頁面，則跳轉到聊天頁面
-  if (isAuth && (to.name === 'login' || to.name === 'register')) {
+  // 如果不需要授權且已經登入，則跳轉到聊天頁面
+  if (!to.meta.requiresAuth && isAuth) {
     return (location.href = '/channels/@me')
   }
 
-  // 取得 user 資料
-  if (isAuth && userStore.userData === null) {
-    const userData = await userStore.fetchUser()
-    userStore.setUserData(userData)
-  }
-
   next()
+})
+
+// 全局後置守衛
+router.afterEach((to) => {
+  // 可以在這裡處理頁面標題、分析追蹤等
+  document.title = `Chat App`
 })
 
 export default router

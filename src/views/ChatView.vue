@@ -10,15 +10,14 @@
       <!-- Main Content -->
       <RouterView name="friendList"></RouterView>
       <RouterView name="chatRoom"></RouterView>
-      <RouterView name="userProfile"></RouterView>
-      <RouterView name="memberList"></RouterView>
+      <!-- <RouterView name="userProfile"></RouterView> -->
+      <!-- <RouterView name="memberList"></RouterView> -->
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
   import { ref, onMounted, watch, nextTick } from 'vue'
-  import { useChatStore } from '@/stores/chat'
   import { useUserStore } from '@/stores/user'
 
   // 使用 Pinia Store

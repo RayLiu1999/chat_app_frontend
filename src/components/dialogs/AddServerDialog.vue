@@ -53,7 +53,12 @@
         </div>
 
         <div class="mt-3">
-          <button class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-1.5">建立</button>
+          <button
+            class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-1.5"
+            @click="handleCreateServer"
+          >
+            建立
+          </button>
         </div>
       </div>
     </el-dialog>
@@ -62,9 +67,11 @@
 
 <script lang="ts" setup>
   import { ref, watch } from 'vue'
+  import { useChatStore } from '@/stores/chat'
+  import type { ServerAPI } from '@/types/api'
 
   const visible = ref(false)
-  const input = ref('ホタル 的伺服器')
+  const input = ref('ホタル の伺服器')
   const previewImage = ref('')
   const fileInput = ref<HTMLInputElement | null>(null)
 
@@ -78,6 +85,18 @@
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleCreateServer = () => {
+    const chatStore = useChatStore()
+    const name = input.value
+    const file = fileInput.value?.files?.[0] || null
+    const server: ServerAPI.Request.Create = {
+      name,
+      picture: file as Blob,
+    }
+    chatStore.createServer(server)
+    visible.value = false
   }
 
   // 初始化對話框內容

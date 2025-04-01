@@ -20,7 +20,7 @@
       <hr class="border-white-300 my-2 border-t" />
     </div>
     <div class="flex flex-col space-y-3">
-      <div v-for="server in servers" :key="server.id" class="channel-group flex items-center">
+      <div v-if="servers.length > 0" v-for="server in servers" :key="server.id" class="channel-group flex items-center">
         <span class="host-border-active"></span>
         <RouterLink v-slot="{ navigate }" :to="`/channels/${server.id}`" custom>
           <el-tooltip
@@ -34,7 +34,7 @@
                 <img
                   alt="Server Image"
                   class="size-12 cursor-pointer rounded-full"
-                  :src="server.picture"
+                  :src="server.picture_url"
                 />
               </div>
             </button>
@@ -101,7 +101,9 @@
 
   onMounted(async () => {
     await chatStore.fetchServerList()
-    servers.value = chatStore.servers
+    if (chatStore.servers) {
+      servers.value = chatStore.servers
+    }
 
     window.addEventListener('click', hideContextMenu)
     // 點ESC鍵隱藏下拉選單

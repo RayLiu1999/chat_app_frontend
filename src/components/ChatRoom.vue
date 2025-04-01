@@ -15,7 +15,11 @@
     <!-- Chat Messages -->
     <el-scrollbar ref="scrollbarRef" :always="true" class="custom-scrollbar">
       <div ref="innerRef" class="bg-#080a28 flex-1 space-y-4 overflow-y-auto p-4">
-        <div v-for="item in 20" :key="item" class="flex items-start space-x-2">
+        <div
+          v-for="message in messages"
+          :key="message.timestamp"
+          class="flex items-start space-x-2"
+        >
           <div class="default-image mr-2 size-10">
             <img
               alt="User"
@@ -26,10 +30,11 @@
           </div>
           <div>
             <div class="flex items-center space-x-2">
-              <span class="text"> ホタル </span>
-              <span class="weak-text"> 今天 21:15 </span>
+              <span class="text">{{ message.username }}</span>
+              <span class="weak-text"></span>
+              {{ new Date(message.timestamp).toLocaleTimeString() }}
             </div>
-            <span class="text">讚讚</span>
+            <span class="text">{{ message.text }}</span>
           </div>
         </div>
       </div>
@@ -67,13 +72,7 @@
   const innerRef = ref<HTMLElement | null>(null)
   const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 
-  // 訊息列表
-  const messages = ref([
-    { id: 1, text: 'Hello' },
-    { id: 2, text: 'How are you?' },
-    { id: 3, text: 'I am fine, thank you!' },
-    // 更多消息...
-  ])
+  const messages = chatStore.messages
 
   // 更新 UserProfileDialog 的顯示狀態
   const handleUpdate = (value: boolean) => {
@@ -85,14 +84,16 @@
     const input = event.target as HTMLInputElement
     const message = input.value
 
+    // 清空輸入框
+    input.value = ''
+
     if (!message) {
       return
     }
 
-    chatStore.addMessage({
+    chatStore.sendMessage({
       type: 'dm',
       room_id: 'fdssd',
-      server_id: 'fsdfsdfdsf',
       user_id: userStore!.userData!.id,
       text: message,
       timestamp: Date.now(),

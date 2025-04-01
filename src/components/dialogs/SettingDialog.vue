@@ -28,6 +28,7 @@
               <li class="button-hover text p-2" @click="currentComponent = UserProfileSetting">
                 個人資料
               </li>
+              <li class="button-hover text p-2" @click="userStore.logout()">登出</li>
             </ul>
           </div>
         </div>
@@ -55,8 +56,10 @@
   import { ref, watch } from 'vue'
   import UserProfileSetting from '@/components/UserProfileSetting.vue'
   import AccountSetting from '@/components/AccountSetting.vue'
+  import { useUserStore } from '@/stores/user'
 
   const visible = ref(false)
+  const userStore = useUserStore()
 
   const props = defineProps<{
     dialogVisible: boolean

@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { User, CSRFToken } from '@/types/auth'
+import type { APIResponse } from '@/types/api'
 import api from '@/api/axios'
 import { generateRandomString } from '@/composables/utils'
 
@@ -14,36 +15,30 @@ export const useUserStore = defineStore('user', () => {
 
   // 登入
   const login = async (email: string, password: string): Promise<void> => {
-    try {
-      const response = await api.post('/login', {
-        email,
-        password,
-      })
+    const response = await api.post('/login', {
+      email,
+      password,
+    }) as APIResponse
 
-      if (response.status !== 200) {
-        throw new Error('Failed to login')
-      }
+    // 設置 token
+    setAccessToken(response.data.access_token)
 
-      // const token = response.data.access_token
-      // setAccessToken(token) // 設置 token
-      // const userData = await fetchUser() // 取得 user
-      // setUserData(userData) // 設置 user
-
+    // 成功就跳轉到個人頁
+    if (response.status === 'success') {
       location.href = '/channels/@me'
-    } catch (error) {
-      console.error('Failed to login:', error)
     }
   }
 
   // 登出
   const logout = (): void => {
     api.post('/logout')
+    location.href = '/login'
   }
 
   // 取得 user
   const fetchUser = async () => {
     try {
-      const response = await api.get('/user')
+      const response = await api.get('/user') as APIResponse
       userData.value = response.data
 
       return response.data

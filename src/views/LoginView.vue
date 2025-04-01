@@ -25,7 +25,7 @@
                 class="bi bi-asterisk"
                 style="font-size: 0.4rem; margin-left: 0.25rem; color: red"
               ></i>
-              <span v-if="item.error" class="font-italic ml-1 text-red-400">- 必要</span>
+              <span v-if="item.error" class="font-italic ml-1 text-red-400">- {{ item.errorMessage }}</span>
             </label>
             <input
               :id="item.name"
@@ -33,6 +33,7 @@
               class="w-full rounded bg-gray-700 p-2 text-white"
               :name="item.name"
               :type="item.type"
+              :placeholder="item.placeholder"
             />
           </div>
           <button
@@ -66,6 +67,8 @@
     required: boolean
     value: string
     error: boolean
+    errorMessage: string
+    placeholder: string
   }
 
   const columns = ref<Record<string, Column>>({
@@ -76,6 +79,8 @@
       required: true,
       value: '',
       error: false,
+      errorMessage: '必要',
+      placeholder: '請輸入電子信箱'
     },
     password: {
       label: '密碼',
@@ -84,11 +89,19 @@
       required: true,
       value: '',
       error: false,
+      errorMessage: '必要',
+      placeholder: '請輸入大於6位的密碼'
     },
   })
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault()
+
+    // 重置錯誤訊息
+    for (const key in columns.value) {
+      columns.value[key].error = false
+      columns.value[key].errorMessage = ''
+    }
 
     let error = false
 
@@ -96,10 +109,26 @@
     for (const key in columns.value) {
       if (columns.value[key].required && !columns.value[key].value) {
         columns.value[key].error = true
+        columns.value[key].errorMessage = '此欄位為必填'
         error = true
       } else {
         columns.value[key].error = false
       }
+    }
+
+    // 驗證email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (columns.value.email.value && !emailRegex.test(columns.value.email.value)) {
+      columns.value.email.error = true
+      columns.value.email.errorMessage = '請輸入有效的電子郵件'
+      return
+    }
+
+    // 驗證密碼
+    if (columns.value.password.value && columns.value.password.value.length < 6) {
+      columns.value.password.error = true
+      columns.value.password.errorMessage = '密碼長度需大於6位'
+      return
     }
 
     if (error) {
