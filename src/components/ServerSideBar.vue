@@ -29,7 +29,7 @@
             placement="left-start"
             :disabled="tooltipDisable"
           >
-            <button @click="navigate" @contextmenu.prevent="handleRightClick($event)">
+            <button @click="navigate" @contextmenu="handleRightClick($event)">
               <div class="default-image size-12">
                 <img
                   alt="Server Image"
@@ -60,25 +60,21 @@
           </div>
         </button>
       </el-tooltip>
+      </div>
     </div>
-  </div>
   <AddServerDialog
     :dialog-visible="AddServerDialogVisible"
     @update-visible="handleAddServerDialog"
   />
-  <RightClickMenu :position="menuPosition" :visible="contextMenuVisible">
-    <template #top>
+  <PositionMenu :position="menuPosition" :visible="contextMenuVisible">
+    <template #item>
       <li @click="handleAddServerDialog(true)">新增伺服器</li>
       <li @click="handleInvite">邀請好友</li>
-    </template>
-    <template #middle>
       <li @click="handleSettings">伺服器設定</li>
       <li @click="handleNotification">通知設定</li>
-    </template>
-    <template #bottom>
       <li @click="handleLeave" class="danger">離開伺服器</li>
     </template>
-  </RightClickMenu>
+  </PositionMenu>
 </template>
 
 <script lang="ts" setup>
