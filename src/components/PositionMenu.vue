@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, watch, nextTick, onMounted } from 'vue'
+  import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
   
   const props = defineProps<{
     position: { x: number; y: number } // 接收的顯示位置
@@ -77,7 +77,36 @@
       menuWidth.value = menuRef.value.offsetWidth
       menuHeight.value = menuRef.value.offsetHeight
     }
+
+    window.addEventListener('click', hiddenMenu)
+    // 點ESC鍵隱藏下拉選單
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        hiddenMenu()
+      }
+    })
   })
+
+  // 定義 emit 函數
+  const emit = defineEmits<{
+    'update:visible': [value: boolean]
+  }>()
+
+  const hiddenMenu = () => {
+    console.log('hiddenMenu')
+    // 使用 emit 通知父組件更新 visible 的值
+    emit('update:visible', false)
+  }
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('click', hiddenMenu)
+    window.removeEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        hiddenMenu()
+      }
+    })
+  })
+
 </script>
 
 <style scoped>

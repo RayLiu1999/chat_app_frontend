@@ -66,7 +66,7 @@
     :dialog-visible="AddServerDialogVisible"
     @update-visible="handleAddServerDialog"
   />
-  <PositionMenu :position="menuPosition" :visible="contextMenuVisible">
+  <PositionMenu :position="menuPosition" v-model:visible="contextMenuVisible">
     <template #item>
       <li @click="handleAddServerDialog(true)">新增伺服器</li>
       <li @click="handleInvite">邀請好友</li>
@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted, onBeforeUnmount } from 'vue'
+  import { ref, onMounted, watch } from 'vue'
   import { useChatStore } from '@/stores/chat'
   import type { Server } from '@/types/chat'
 
@@ -100,33 +100,16 @@
     if (chatStore.servers) {
       servers.value = chatStore.servers
     }
-
-    window.addEventListener('click', hideContextMenu)
-    // 點ESC鍵隱藏下拉選單
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        hideContextMenu()
-      }
-    })
   })
 
-  // 在元件銷毀前移除監聽事件
-  onBeforeUnmount(() => {
-    window.removeEventListener('click', hideContextMenu)
+  // 監聽contextMenuVisible判斷tooltip
+  watch(contextMenuVisible, (value) => {
+    tooltipDisable.value = value
   })
 
   const handleRightClick = (event: { clientX: number; clientY: number }) => {
-    // 隱藏tooltip
-    tooltipDisable.value = true
-
     menuPosition.value = { x: event.clientX, y: event.clientY } // 設置選單位置
     contextMenuVisible.value = true // 顯示選單
-  }
-
-  // 隱藏選單的函數（可以在全局點擊時使用）
-  const hideContextMenu = () => {
-    contextMenuVisible.value = false
-    tooltipDisable.value = false // 顯示tooltip
   }
 
   // 更新 AddServerDialog 的顯示狀態
