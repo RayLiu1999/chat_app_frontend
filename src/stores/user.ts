@@ -1,9 +1,8 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { User, CSRFToken } from '@/types/auth'
+import type { User } from '@/types/auth'
 import type { APIResponse } from '@/types/api'
 import api from '@/api/axios'
-import { generateRandomString } from '@/composables/utils'
 
 export const useUserStore = defineStore('user', () => {
   const userData = ref<User | null>(null)
@@ -54,20 +53,6 @@ export const useUserStore = defineStore('user', () => {
   /**
    * Methods
    */
-
-  // 生成 CSRF token
-  const generateCSRFToken = (): CSRFToken => {
-    const csrfName: string = 'csrf_name_' + generateRandomString(10)
-    const csrfValue: string = 'csrf_value_' + generateRandomString(50)
-
-    document.cookie = `${csrfName}=${csrfValue}; path=/`
-
-    return {
-      name: csrfName,
-      value: csrfValue,
-    }
-  }
-
   // 刷新 access token
   const refreshAccessToken = async (): Promise<string> => {
     try {
@@ -159,7 +144,6 @@ export const useUserStore = defineStore('user', () => {
     clearUserData,
     setAccessToken,
     clearAccessToken,
-    generateCSRFToken,
     refreshAccessToken,
     isAuthenticated,
   }

@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/user'
 import { useResMsgStore } from '@/stores/res_msg'
 import type { CSRFToken } from '@/types/auth'
 import type { APIResponse } from '@/types/api'
+import { generateCSRFToken } from '@/utils/csrf'
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN
 let API_URL = ''
@@ -13,7 +14,7 @@ if (import.meta.env.ONLINE) {
   API_URL = 'http://' + API_DOMAIN
 }
 
-const needsAuthRoutes = ['/user', '/logout', '/channels', '/servers']
+const needsAuthRoutes = ['/user', '/logout', '/channels', '/servers', '/friends']
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
 
@@ -50,7 +51,7 @@ api.interceptors.request.use(
 
     // get以外皆需要CSRF token
     if (config.method !== 'get') {
-      const token = userStore.generateCSRFToken()
+      const token = generateCSRFToken()
       const csrfToken: CSRFToken = {
         name: '',
         value: '',
