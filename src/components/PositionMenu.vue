@@ -93,7 +93,6 @@
   }>()
 
   const hiddenMenu = () => {
-    console.log('hiddenMenu')
     // 使用 emit 通知父組件更新 visible 的值
     emit('update:visible', false)
   }
