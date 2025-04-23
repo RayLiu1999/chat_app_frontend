@@ -2,10 +2,10 @@
   <div class="bg-#070922 absolute bottom-0 w-60">
     <div class="flex items-center p-2">
       <div class="default-image size-8">
-        <img alt="User" class="h-full w-full" src="@/assets/images/user1.jpg" />
+        <img alt="User" class="h-full w-full" :src="userStore.userData?.pic_url" />
       </div>
-      <div class="ml-2">
-        <div class="text text-sm">ホタル</div>
+      <div class="ml-2 flex-1 min-w-0">
+        <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userStore.userData?.nick_name }}</div>
         <div class="text-xs text-green-500">線上</div>
       </div>
       <div class="weak-text ml-auto flex space-x-2">
@@ -78,6 +78,7 @@
   import { ref, onMounted } from 'vue'
   import volumeOnSound from '@/assets/sounds/volume-on.mp3'
   import volumeOffSound from '@/assets/sounds/volume-off.mp3'
+  import { useUserStore } from '@/stores/user'
 
   const SettingDialogVisible = ref(false)
   const micMuted = ref(true) // 預設為關閉
@@ -86,11 +87,12 @@
   const micMutedByVolume = ref(false)
   const micPermissionGranted = ref(false)
   const audioPermissionGranted = ref(false)
+  const userStore = useUserStore()
 
-  // 创建音频上下文
+  // 創建音檔上下文
   const audioContext = ref<AudioContext | null>(null)
 
-  // 预加载音频缓冲区
+  // 預載入音檔緩衝區
   const audioBuffers = ref<{
     on: AudioBuffer | null
     off: AudioBuffer | null
@@ -99,14 +101,14 @@
     off: null,
   })
 
-  // 初始化音频
+  // 初始化音效
   const initAudio = async () => {
-    // 仅在浏览器环境中初始化
+    // 僅在瀏覽器環境中初始化
     if (typeof window !== 'undefined') {
       audioContext.value = new (window.AudioContext || (window as any).webkitAudioContext)()
 
       try {
-        // 预加载音频文件
+        // 預載入音檔緩衝區
         const [onBuffer, offBuffer] = await Promise.all([
           fetch(volumeOnSound)
             .then((response) => response.arrayBuffer())
@@ -134,11 +136,11 @@
     }
 
     try {
-      // 创建音频源
+      // 建立音檔源
       const source = audioContext.value.createBufferSource()
       source.buffer = audioBuffers.value[type]
 
-      // 连接到输出
+      // 連接輸出
       source.connect(audioContext.value.destination)
 
       // 播放
