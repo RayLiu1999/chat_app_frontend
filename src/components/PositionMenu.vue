@@ -1,9 +1,24 @@
 <template>
+  <!-- 透明遮罩層，點擊時隱藏選單 -->
   <div
-    v-if="visible"
+    v-if="isVisible"
+    class="menu-overlay"
+    @click.stop.prevent="hiddenMenu"
+    @contextmenu.stop.prevent="hiddenMenu"
+    @mousedown.stop.prevent
+    @mouseup.stop.prevent
+    @touchstart.stop.prevent
+    @touchend.stop.prevent
+  ></div>
+  
+  <!-- 選單內容 -->
+  <div
+    v-if="isVisible"
     ref="menuRef"
     :style="menuStyle"
     class="custom-menu"
+    @click.stop
+    @contextmenu.stop.prevent
   >
     <ul>
       <slot name="item"></slot>
@@ -14,10 +29,11 @@
 <script lang="ts" setup>
   import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
   
-  const props = defineProps<{
-    position: { x: number; y: number } // 接收的顯示位置
-    visible: boolean // 控制選單顯示與否
-  }>()
+  // 內部管理顯示狀態
+  const isVisible = ref(false)
+  
+  // 內部管理位置
+  const position = ref({ x: 0, y: 0 })
   
   // 選單 DOM 元素參考
   const menuRef = ref<HTMLElement | null>(null)
@@ -33,8 +49,8 @@
     const windowHeight = window.innerHeight
     
     // 計算初始位置
-    let x = props.position.x
-    let y = props.position.y
+    let x = position.value.x
+    let y = position.value.y
     
     // 檢查右側是否有足夠空間
     if (x + menuWidth.value > windowWidth) {
@@ -59,8 +75,8 @@
   })
   
   // 當選單顯示時，取得實際尺寸
-  watch(() => props.visible, async (isVisible) => {
-    if (isVisible) {
+  watch(isVisible, async (visible) => {
+    if (visible) {
       // 等待 DOM 更新
       await nextTick()
       if (menuRef.value) {
@@ -70,6 +86,28 @@
       }
     }
   })
+
+  // 隱藏選單函數
+  const hiddenMenu = () => {
+    isVisible.value = false
+  }
+  
+  /**
+   * 顯示選單
+   * @param pos 選單顯示位置
+   */
+  const showMenu = (pos: { x: number; y: number }) => {
+    // 更新位置
+    position.value = pos
+    // 顯示選單
+    isVisible.value = true
+  }
+  
+  // 暴露方法給外部使用
+  defineExpose({
+    showMenu,
+    hideMenu: hiddenMenu
+  })
   
   // 在元件掛載時取得預設尺寸
   onMounted(() => {
@@ -78,8 +116,7 @@
       menuHeight.value = menuRef.value.offsetHeight
     }
 
-    window.addEventListener('click', hiddenMenu)
-    // 點ESC鍵隱藏下拉選單
+    // 點 ESC 鍵隱藏下拉選單
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         hiddenMenu()
@@ -87,18 +124,9 @@
     })
   })
 
-  // 定義 emit 函數
-  const emit = defineEmits<{
-    'update:visible': [value: boolean]
-  }>()
-
-  const hiddenMenu = () => {
-    // 使用 emit 通知父組件更新 visible 的值
-    emit('update:visible', false)
-  }
+  // 移除不需要的註釋
 
   onBeforeUnmount(() => {
-    window.removeEventListener('click', hiddenMenu)
     window.removeEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         hiddenMenu()
@@ -109,8 +137,23 @@
 </script>
 
 <style scoped>
+  /* 遮罩層樣式 */
+  .menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: transparent;
+    z-index: 999;
+    /* 確保點擊事件能被捕獲 */
+    pointer-events: auto;
+    /* 避免選擇文字 */
+    user-select: none;
+  }
+  
   .custom-menu {
-    position: absolute;
+    position: fixed;
     background-color: #0f0f2b;
     padding: 10px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);

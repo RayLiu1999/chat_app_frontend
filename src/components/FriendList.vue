@@ -102,7 +102,7 @@
         </div>
       </div>
     </el-scrollbar>
-    <PositionMenu :position="menuPosition" v-model:visible="contextMenuVisible">
+    <PositionMenu ref="menuRef">
       <template #item>
         <li @click="">開始語音通話</li>
         <li @click="">開始視訊通話</li>
@@ -118,7 +118,8 @@
   import type { User } from '@/types/auth'
   import { ElMessageBox, ElMessage } from 'element-plus';
   import { useRouter } from 'vue-router'
-
+  import PositionMenu from './PositionMenu.vue'
+  
   const router = useRouter()
 
   type StatusKey = 'all' | 'online' | 'pending' | 'blocked' | 'addFriend'
@@ -158,9 +159,8 @@
   })
 
   // 更多選單
-  const menuPosition = ref({ x: 0, y: 0 }) // 定義選單顯示位置
-  const contextMenuVisible = ref(false) // 控制選單顯示與否
   const tooltipDisable = ref(false)
+  const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
 
   onMounted(async () => {
     await friendStore.fetchFriends()
@@ -205,8 +205,10 @@
     // 阻止事件冒泡
     event.stopPropagation()
 
-    menuPosition.value = { x: event.clientX, y: event.clientY } // 設置選單位置
-    contextMenuVisible.value = true // 顯示選單
+    menuRef.value?.showMenu({
+      x: event.clientX,
+      y: event.clientY
+    })
   }
 
 /**

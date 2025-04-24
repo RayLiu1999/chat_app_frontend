@@ -66,7 +66,7 @@
     :dialog-visible="AddServerDialogVisible"
     @update-visible="handleAddServerDialog"
   />
-  <PositionMenu :position="menuPosition" v-model:visible="contextMenuVisible">
+  <PositionMenu ref="menuRef">
     <template #item>
       <li @click="handleAddServerDialog(true)">新增伺服器</li>
       <li @click="handleInvite">邀請好友</li>
@@ -78,17 +78,16 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted, watch } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { useChatStore } from '@/stores/chat'
   import type { Server } from '@/types/chat'
+  import PositionMenu from './PositionMenu.vue'
 
   const chatStore = useChatStore()
   const servers = ref<Server[]>([])
 
   // 伺服器設定下拉選單
-  const menuPosition = ref({ x: 0, y: 0 }) // 定義選單顯示位置
-  const contextMenuVisible = ref(false) // 控制選單顯示與否
-
+  const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
   // 顯示tooltip
   const tooltipDisable = ref(false)
 
@@ -103,13 +102,11 @@
   })
 
   // 監聽contextMenuVisible判斷tooltip
-  watch(contextMenuVisible, (value) => {
-    tooltipDisable.value = value
-  })
-
   const handleRightClick = (event: { clientX: number; clientY: number }) => {
-    menuPosition.value = { x: event.clientX, y: event.clientY } // 設置選單位置
-    contextMenuVisible.value = true // 顯示選單
+    menuRef.value?.showMenu({
+      x: event.clientX,
+      y: event.clientY
+    })
   }
 
   // 更新 AddServerDialog 的顯示狀態
@@ -120,22 +117,22 @@
   // 右鍵選單處理函數
   const handleInvite = () => {
     // 處理邀請好友的邏輯
-    contextMenuVisible.value = false
+    menuRef.value?.hideMenu()
   }
 
   const handleSettings = () => {
     // 處理伺服器設定的邏輯
-    contextMenuVisible.value = false
+    menuRef.value?.hideMenu()
   }
 
   const handleNotification = () => {
     // 處理通知設定的邏輯
-    contextMenuVisible.value = false
+    menuRef.value?.hideMenu()
   }
 
   const handleLeave = () => {
     // 處理離開伺服器的邏輯
-    contextMenuVisible.value = false
+    menuRef.value?.hideMenu()
   }
 </script>
 

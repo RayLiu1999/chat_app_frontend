@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-#0c0c31 relative w-60" @contextmenu.prevent="handleRightClick">
+  <div class="bg-#0c0c31 relative w-60" @contextmenu="handleRightClick">
     <div>
       <DropdownCp />
       <div class="mt-4">
@@ -8,23 +8,35 @@
     </div>
     <BottomBar />
   </div>
-  <PositionMenu :position="menuPosition" v-model:visible="contextMenuVisible">
-    <template #item>
-      <li @click="">編輯頻道</li>
-      <li @click="" class="danger">刪除頻道</li>
-    </template>
-  </PositionMenu>
+  <PositionMenu ref="menuRef">
+      <template #item>
+        <li @click="createChannel">建立頻道</li>
+        <li @click="createCategory" class="danger">建立類別</li>
+      </template>
+    </PositionMenu>
 </template>
 
 <script lang="ts" setup>
   import { ref } from 'vue'
+  import PositionMenu from './PositionMenu.vue'
 
-  const menuPosition = ref({ x: 0, y: 0 }) // 定義選單顯示位置
-  const contextMenuVisible = ref(false) // 控制選單顯示與否
+  const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
 
-  const handleRightClick = (event: { clientX: number; clientY: number }) => {
-    menuPosition.value = { x: event.clientX, y: event.clientY } // 設置選單位置
-    contextMenuVisible.value = true // 顯示選單
+  const handleRightClick = (event: MouseEvent) => {
+    menuRef.value?.showMenu({
+      x: event.clientX,
+      y: event.clientY
+    })
+  }
+
+  const createChannel = () => {
+    console.log('建立頻道')
+    menuRef.value?.hideMenu()
+  }
+
+  const createCategory = () => {
+    console.log('建立類別')
+    menuRef.value?.hideMenu()
   }
 </script>
 <style lang="scss" scoped></style>
