@@ -13,18 +13,24 @@ export const useUserStore = defineStore('user', () => {
    */
 
   // 登入
-  const login = async (email: string, password: string): Promise<void> => {
-    const response = await api.post('/login', {
-      email,
-      password,
-    }) as APIResponse
+  const login = async (email: string, password: string): Promise<APIResponse> => {
+    try {
+      const response = await api.post('/login', {
+        email,
+        password,
+      }) as APIResponse
 
-    // 設置 token
-    setAccessToken(response.data.access_token)
+      // 設置 token
+      setAccessToken(response.data.access_token)
 
-    // 成功就跳轉到個人頁
-    if (response.status === 'success') {
-      location.href = '/channels/@me'
+      // 成功就跳轉到個人頁
+      if (response.status === 'success') {
+        location.href = '/channels/@me'
+      }
+      return response
+    } catch (error) {
+      console.error('Failed to login:', error)
+      throw error
     }
   }
 
@@ -38,9 +44,10 @@ export const useUserStore = defineStore('user', () => {
   const fetchUser = async () => {
     try {
       const response = await api.get('/user') as APIResponse
-      userData.value = response.data
+      const data = response.data as User
+      userData.value = data
 
-      return response.data
+      return data
     } catch (error) {
       // 登出
       clearUserData()

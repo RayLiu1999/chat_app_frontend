@@ -5,11 +5,11 @@
     <!-- Main Area -->
     <div class="flex flex-1">
       <!-- Side Content -->
-      <RouterView name="chatList"></RouterView>
+      <RouterView name="dmRoomList"></RouterView>
       <RouterView name="channelList"></RouterView>
       <!-- Main Content -->
       <RouterView name="friendList"></RouterView>
-      <RouterView name="chatRoom"></RouterView>
+      <RouterView name="dmRoom"></RouterView>
       <!-- <RouterView name="userProfile"></RouterView> -->
       <!-- <RouterView name="memberList"></RouterView> -->
     </div>

@@ -1,8 +1,9 @@
 export interface User {
   id: string
   username: string
-  nick_name: string
+  nickname: string
   pic_url: string
+  status: string
 }
 
 export interface CSRFToken {

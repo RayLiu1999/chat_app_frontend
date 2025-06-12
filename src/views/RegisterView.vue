@@ -86,9 +86,9 @@
       remark: '',
       placeholder: '請輸入電子信箱',
     },
-    nick_name: {
+    nickname: {
       label: '顯示名稱',
-      name: 'nick_name',
+      name: 'nickname',
       type: 'text',
       required: false,
       value: '',
@@ -171,7 +171,7 @@
       await api
         .post('/register', {
           email: columns.value.email.value,
-          nick_name: columns.value.nick_name.value || columns.value.username.value, // 如果沒有填寫顯示名稱，使用使用者名稱
+          nickname: columns.value.nickname.value || columns.value.username.value, // 如果沒有填寫顯示名稱，使用使用者名稱
           username: columns.value.username.value,
           password: columns.value.password.value,
         })

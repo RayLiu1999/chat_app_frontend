@@ -1,11 +1,13 @@
 <template>
   <div class="bg-#070922 absolute bottom-0 w-60">
     <div class="flex items-center p-2">
-      <div class="default-image size-8">
-        <img alt="User" class="h-full w-full" :src="userStore.userData?.pic_url" />
-      </div>
+      <AvatarImage
+        :src="userStore.userData?.pic_url"
+        alt="User"
+        size="md"
+      />
       <div class="ml-2 flex-1 min-w-0">
-        <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userStore.userData?.nick_name }}</div>
+        <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userStore.userData?.nickname }}</div>
         <div class="text-xs text-green-500">線上</div>
       </div>
       <div class="weak-text ml-auto flex space-x-2">

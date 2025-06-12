@@ -59,7 +59,7 @@
                 <img alt="User" class="size-10 cursor-pointer" :src="friend.pic_url" @error="handleError" />
               </div>
               <div>
-                <div class="text">{{ friend.nick_name }}</div>
+                <div class="text">{{ friend.nickname }}</div>
                 <div class="weak-text text-sm">{{ friend.status === 'online' ? '線上' : '離線' }}</div>
               </div>
             </div>
@@ -113,8 +113,9 @@
 </template>
 
 <script lang="ts" setup>
-  import { useFriendStore } from '@/stores/friend'
   import { computed, ref, onMounted } from 'vue'
+  import { useFriendStore } from '@/stores/friend'
+  import { useChatStore } from '@/stores/chat'
   import type { User } from '@/types/auth'
   import { ElMessageBox, ElMessage } from 'element-plus';
   import { useRouter } from 'vue-router'
@@ -135,6 +136,7 @@
   const selectedStatus = ref<StatusKey>('online')
   const newFriendUsername = ref('')
   const friendStore = useFriendStore()
+  const chatStore = useChatStore()
   const friends = computed(() => friendStore.friends)
   const filteredFriends = computed(() => {
     // 確保 friends.value 是陣列
@@ -212,12 +214,16 @@
   }
 
 /**
- * 進入聊天室
+ * 開始聊天
  * @param friend 好友物件
  */
-function goToChat(friend: User) {
+async function goToChat(friend: User) {
+  // 建立DM聊天室
+  const dmRoom = await chatStore.fetchCreateDMRoom({ chat_with_user_id: friend.id })
+
+  // 跳轉到聊天室
   router.push({
-    path: `/channels/@me/${friend.id}`,
+    path: `/channels/@me/${dmRoom.room_id}`,
   })
 }
 
@@ -244,14 +250,14 @@ function handleMoreCommand(command: string, friend: User) {
  * 開始語音通話
  */
 function startVoiceCall(friend: User) {
-  ElMessage.success(`與「${friend.nick_name}」開始語音通話（待實作）`);
+  ElMessage.success(`與「${friend.nickname}」開始語音通話（待實作）`);
 }
 
 /**
  * 開始視訊通話
  */
 function startVideoCall(friend: User) {
-  ElMessage.success(`與「${friend.nick_name}」開始視訊通話（待實作）`);
+  ElMessage.success(`與「${friend.nickname}」開始視訊通話（待實作）`);
 }
 
 /**
@@ -259,7 +265,7 @@ function startVideoCall(friend: User) {
  */
 function removeFriend(friend: User) {
   ElMessageBox.confirm(
-    `確定要移除好友「${friend.nick_name}」嗎？`,
+    `確定要移除好友「${friend.nickname}」嗎？`,
     '移除好友',
     {
       confirmButtonText: '確定',

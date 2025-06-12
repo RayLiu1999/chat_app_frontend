@@ -55,7 +55,6 @@
 <script lang="ts" setup>
   import { ref } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
-  import api from '@/api/axios'
   import { useUserStore } from '@/stores/user'
 
   const router = useRouter()
@@ -137,6 +136,7 @@
 
     // 登入
     const userStore = useUserStore()
-    userStore.login(columns.value.email.value, columns.value.password.value)
+    const res = await userStore.login(columns.value.email.value, columns.value.password.value)
+    console.log(res)
   }
 </script>

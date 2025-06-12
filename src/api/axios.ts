@@ -14,7 +14,7 @@ if (import.meta.env.ONLINE) {
   API_URL = 'http://' + API_DOMAIN
 }
 
-const needsAuthRoutes = ['/user', '/logout', '/channels', '/servers', '/friends']
+const needsAuthRoutes = ['/user', '/logout', '/channels', '/servers', '/friends', '/dm_rooms']
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
 
@@ -141,7 +141,11 @@ api.interceptors.response.use(
         // 顯示對應錯誤訊息
 
         if (apiResponse.displayable) {
-          resMsgStore.showError(apiResponse.code)
+          if (apiResponse.message) {
+            resMsgStore.showError(apiResponse.code, apiResponse.message)
+          } else {
+            resMsgStore.showError(apiResponse.code)
+          }
         }
 
         // 系統錯誤訊息
@@ -162,7 +166,7 @@ api.interceptors.response.use(
       resMsgStore.showError(errorCode)
     }
 
-    return Promise.reject(error)
+    return Promise.reject(response)
   },
 )
 

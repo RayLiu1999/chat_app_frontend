@@ -22,7 +22,7 @@
 
 <style lang="scss">
   .default-image {
-    background: url('@/assets/images/user1.jpg') no-repeat center center/cover;
+    // background: url('@/assets/images/user1.jpg') no-repeat center center/cover;
     overflow: hidden;
     border-radius: 50%;
   }

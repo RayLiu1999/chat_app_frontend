@@ -3,9 +3,10 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ChatView from '../views/ChatView.vue'
 import ChatSettingView from '../views/ChatSettingView.vue'
-import ChatList from '@/components/ChatList.vue'
-import ChatRoom from '@/components/ChatRoom.vue'
+import DmRoomList from '@/components/DmRoomList.vue'
+import DmRoom from '@/components/DmRoom.vue'
 import ChannelList from '@/components/ChannelList.vue'
+import ChannelRoom from '@/components/ChannelRoom.vue'
 import FriendList from '@/components/FriendList.vue'
 import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
@@ -47,23 +48,31 @@ const router = createRouter({
         {
           path: '@me',
           components: {
-            chatList: ChatList,
+            dmRoomList: DmRoomList,
             friendList: FriendList,
           },
         },
         {
-          path: '@me/:id([a-zA-Z0-9]+)',
+          path: '@me/:dm_room_id([a-zA-Z0-9]+)',
           components: {
-            chatList: ChatList,
-            chatRoom: ChatRoom,
+            dmRoomList: DmRoomList,
+            dmRoom: DmRoom,
             userProfile: UserProfile,
           },
         },
         {
-          path: ':id([a-zA-Z0-9]+)',
+          path: ':server_id([a-zA-Z0-9]+)',
           components: {
             channelList: ChannelList,
-            chatRoom: ChatRoom,
+            channelRoom: ChannelRoom,
+            memberList: MemberList,
+          },
+        },
+        {
+          path: ':server_id([a-zA-Z0-9]+)/:channel_id([a-zA-Z0-9]+)',
+          components: {
+            channelList: ChannelList,
+            channelRoom: ChannelRoom,
             memberList: MemberList,
           },
         },
@@ -88,14 +97,16 @@ router.beforeEach(async (to, from, next) => {
     // 取得 user 資料
     if (userStore.userData === null) {
       const userData = await userStore.fetchUser()
-      userStore.setUserData(userData)
+      if (userData) {
+        userStore.setUserData(userData)
+      }
     }
 
     // 如果需要 WebSocket 連接且已經登入，則建立連接
     if (to.meta.requiresWebSocket) {
       // 連接 WebSocket
       if (!chatStore.checkWsConnection()) {
-        chatStore.wsConnect()
+        await chatStore.wsConnect()
       }
     }
 
