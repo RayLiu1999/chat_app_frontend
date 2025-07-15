@@ -30,13 +30,7 @@
             :disabled="tooltipDisable"
           >
             <button @click="navigate" @contextmenu="handleRightClick($event)">
-              <div class="default-image size-12">
-                <img
-                  alt="Server Image"
-                  class="size-12 cursor-pointer rounded-full"
-                  :src="server.picture_url"
-                />
-              </div>
+              <AvatarImage :src="server.picture_url" alt="Server Image" size="xl" />
             </button>
           </el-tooltip>
         </RouterLink>

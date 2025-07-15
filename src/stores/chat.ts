@@ -191,9 +191,9 @@ export const useChatStore = defineStore('chat', () => {
 
   // 隱藏DM聊天室
   const fetchHideDMRoom = async ( dm_room_id: string) => {
-    const response = await api.put(`/dm_rooms`, { room_id: dm_room_id,  is_hidden: true })
-    dm_rooms.value.filter((c) => c.room_id === dm_room_id)
-    return response.data
+    await api.put(`/dm_rooms`, { room_id: dm_room_id,  is_hidden: true })
+    dm_rooms.value = dm_rooms.value.filter((c) => c.room_id !== dm_room_id)
+    router.push('/channels/@me')
   }
 
   // 取得DM聊天室訊息

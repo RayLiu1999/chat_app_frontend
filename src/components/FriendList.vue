@@ -55,9 +55,7 @@
             @click="goToChat(friend)"
           >
             <div class="flex items-center space-x-4">
-              <div class="default-image size-10">
-                <img alt="User" class="size-10 cursor-pointer" :src="friend.pic_url" @error="handleError" />
-              </div>
+              <AvatarImage :src="friend.pic_url" alt="User" size="md" />
               <div>
                 <div class="text">{{ friend.nickname }}</div>
                 <div class="weak-text text-sm">{{ friend.status === 'online' ? '線上' : '離線' }}</div>
@@ -193,11 +191,6 @@
     } catch (error) {
       console.error('拒絕好友請求失敗:', error)
     }
-  }
-
-  const handleError = (e: Event) => {
-    const target = e.target as HTMLImageElement
-    target.style.display = 'none'
   }
 
   const handleSelectClick = (event: MouseEvent) => {

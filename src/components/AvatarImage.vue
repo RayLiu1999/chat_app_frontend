@@ -20,7 +20,7 @@ import defaultAvatar from '@/assets/images/user1.jpg'
 interface Props {
   src: string
   alt?: string
-  size?: 'sm' | 'xs' | 'md' | 'lg'   // 預設 md
+  size?: 'sm' | 'xs' | 'md' | 'xl' | 'lg'    // 預設 md
 }
 const props = withDefaults(defineProps<Props>(), {
   alt: '',
@@ -32,6 +32,7 @@ const sizeMap = {
   sm: 'w-6 h-6',   // Tailwind size-6
   xs: 'w-8 h-8',   // Tailwind size-8
   md: 'w-10 h-10', // Tailwind size-10
+  xl: 'w-12 h-12', // Tailwind size-12
   lg: 'w-16 h-16', // Tailwind size-16
 }
 
