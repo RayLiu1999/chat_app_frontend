@@ -4,6 +4,7 @@ export interface User {
   nickname: string
   pic_url: string
   status: string
+  is_online: boolean
 }
 
 export interface CSRFToken {

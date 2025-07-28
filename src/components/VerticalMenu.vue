@@ -242,9 +242,9 @@ watch(
 )
 
 // 元件掛載時載入頻道
-onMounted(() => {
-  loadChannels()
-})
+// onMounted(() => {
+//   loadChannels()
+// })
 </script>
 
 <style lang="scss" scoped>

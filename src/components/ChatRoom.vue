@@ -100,6 +100,7 @@ import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useChatStore } from '@/stores/chat'
 import { useChannelStore } from '@/stores/channel'
+import { useServerStore } from '@/stores/server'
 import { useUserStore } from '@/stores/user'
 import { ElScrollbar } from 'element-plus'
 import { formatTimestamp, ymd, ymdHm, formatDateHeader } from '@/utils/time'
@@ -119,6 +120,7 @@ const props = defineProps<Props>()
 // Stores
 const chatStore = useChatStore()
 const channelStore = useChannelStore()
+const serverStore = useServerStore()
 const userStore = useUserStore()
 
 // Route
@@ -193,10 +195,20 @@ const getMessageProfile = (message: Message): { nickname: string; picture_url: s
     }
   }
 
-  // TODO: 對於 channel，需要從成員列表獲取用戶資料
+  // 對於 channel，從伺服器成員列表獲取用戶資料
+  if (props.roomType === 'channel') {
+    const member = serverStore.getMemberByUserId(message.sender_id)
+    if (member) {
+      return {
+        nickname: member.nickname || member.username,
+        picture_url: member.picture || '/default-avatar.png',
+      }
+    }
+  }
+
   return {
     nickname: '未知用戶',
-    picture_url: '',
+    picture_url: '/default-avatar.png',
   }
 }
 
@@ -228,7 +240,11 @@ const isNewDate = (idx: number, message: Message): boolean => {
 }
 
 const scrollToBottom = async () => {
-  scrollbarRef.value!.setScrollTop(innerRef.value!.clientHeight)
+  if (!scrollbarRef.value || !innerRef.value) {
+    console.warn('ChatRoom: scrollbarRef or innerRef is null, skipping scroll')
+    return
+  }
+  scrollbarRef.value.setScrollTop(innerRef.value.clientHeight)
 }
 
 const delayedScrollToBottom = async () => {
@@ -249,8 +265,13 @@ const loadMore = async () => {
   if (messages.value.length === 0 || messages.value.length % 50 !== 0) return
   if (loadingMore.value) return
   
+  const wrapper = scrollbarRef.value?.wrapRef as HTMLElement | undefined
+  if (!wrapper) {
+    console.warn('ChatRoom: wrapper is null, skipping loadMore')
+    return
+  }
+  
   loadingMore.value = true
-  const wrapper = scrollbarRef.value?.wrapRef as HTMLElement
   const prevHeight = wrapper.scrollHeight
   const topMsgId = messages.value[0].id
   
@@ -269,44 +290,64 @@ const loadMore = async () => {
 }
 
 const initializeRoom = async () => {
-  // 加入房間
-  await chatStore.joinRoom({
-    room_type: props.roomType,
-    room_id: props.roomId,
-  })
-
-  // 載入訊息
-  if (props.roomType === 'dm') {
-    await chatStore.fetchDMMessages({
-      room_id: props.roomId,
-      limit: 50,
-    })
-  } else if (props.roomType === 'channel') {
-    // 設定當前頻道
-    await channelStore.fetchChannel(props.roomId)
-    
-    // 載入頻道訊息
-    await chatStore.fetchChannelMessages({
-      room_id: props.roomId,
-      limit: 50,
-    })
+  // 檢查 roomId 是否有效
+  if (!props.roomId) {
+    console.warn('ChatRoom: roomId is empty, skipping initialization')
+    return
   }
 
-  await delayedScrollToBottom()
+  try {
+    // 加入房間
+    await chatStore.joinRoom({
+      room_type: props.roomType,
+      room_id: props.roomId,
+    })
+
+    // 載入訊息
+    if (props.roomType === 'dm') {
+      await chatStore.fetchDMMessages({
+        room_id: props.roomId,
+        limit: 50,
+      })
+    } else if (props.roomType === 'channel') {
+      // 設定當前頻道
+      await channelStore.fetchChannel(props.roomId)
+      
+      // 獲取伺服器ID並載入伺服器詳細資訊
+      const channel = currentChannel.value
+      if (channel?.server_id) {
+        await serverStore.fetchServerDetail(channel.server_id)
+      }
+      
+      // 載入頻道訊息
+      await chatStore.fetchChannelMessages({
+        room_id: props.roomId,
+        limit: 50,
+      })
+    }
+
+    await delayedScrollToBottom()
+  } catch (error) {
+    console.error('ChatRoom: Failed to initialize room:', error)
+  }
 }
 
 // Lifecycle
 onMounted(async () => {
-  await initializeRoom()
+  if (props.roomId) {
+    await initializeRoom()
 
-  // 只為 DM 添加滾動監聽器
-  if (props.roomType === 'dm') {
-    const wrapper = scrollbarRef.value?.wrapRef as HTMLElement
-    wrapper.addEventListener('scroll', () => {
-      if (wrapper.scrollTop === 0) {
-        loadMore()
+    // 只為 DM 添加滾動監聽器
+    if (props.roomType === 'dm') {
+      const wrapper = scrollbarRef.value?.wrapRef as HTMLElement | undefined
+      if (wrapper) {
+        wrapper.addEventListener('scroll', () => {
+          if (wrapper.scrollTop === 0) {
+            loadMore()
+          }
+        })
       }
-    })
+    }
   }
 })
 

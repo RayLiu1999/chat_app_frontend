@@ -9,6 +9,9 @@ export const useChannelStore = defineStore('channel', () => {
   // 狀態
   const channels = ref<Channel[]>([])
   const currentChannel = ref<Channel | null>(null)
+  
+  // 記住每個 server 的最後訪問頻道 (只存在前端記憶體中)
+  const lastVisitedChannels = ref<Record<string, string>>({})
 
   // 獲取伺服器頻道列表
   const fetchServerChannels = async (serverId: string) => {
@@ -143,6 +146,31 @@ export const useChannelStore = defineStore('channel', () => {
   // 設置當前頻道
   const setCurrentChannel = (channel: Channel | null) => {
     currentChannel.value = channel
+    // 記住這個 server 的最後訪問頻道
+    if (channel) {
+      lastVisitedChannels.value[channel.server_id] = channel.id
+    }
+  }
+
+  // 獲取指定 server 的最後訪問頻道
+  const getLastVisitedChannel = (serverId: string): string | null => {
+    return lastVisitedChannels.value[serverId] || null
+  }
+
+  // 獲取指定 server 的預設頻道（最後訪問或第一個文字頻道）
+  const getDefaultChannelForServer = (serverId: string): Channel | null => {
+    if (channels.value.length === 0) return null
+    
+    // 先檢查是否有最後訪問的頻道
+    const lastChannelId = getLastVisitedChannel(serverId)
+    if (lastChannelId) {
+      const lastChannel = channels.value.find(c => c.id === lastChannelId)
+      if (lastChannel) return lastChannel
+    }
+    
+    // 如果沒有，返回第一個文字頻道
+    const textChannels = channels.value.filter(c => c.type === 'text')
+    return textChannels.length > 0 ? textChannels[0] : null
   }
 
   // 根據類型分組頻道
@@ -166,6 +194,7 @@ export const useChannelStore = defineStore('channel', () => {
     // 狀態
     channels,
     currentChannel,
+    lastVisitedChannels,
     
     // 方法
     fetchServerChannels,
@@ -174,6 +203,8 @@ export const useChannelStore = defineStore('channel', () => {
     updateChannel,
     deleteChannel,
     setCurrentChannel,
+    getLastVisitedChannel,
+    getDefaultChannelForServer,
     getGroupedChannels,
     clearChannels
   }

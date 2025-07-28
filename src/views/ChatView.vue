@@ -12,7 +12,7 @@
       <RouterView name="dmRoom"></RouterView>
       <RouterView name="channelRoom"></RouterView>
       <!-- <RouterView name="userProfile"></RouterView> -->
-      <!-- <RouterView name="memberList"></RouterView> -->
+      <RouterView name="memberList"></RouterView>
     </div>
   </div>
 </template>

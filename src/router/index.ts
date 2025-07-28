@@ -10,8 +10,10 @@ import ChannelRoom from '@/components/ChannelRoom.vue'
 import FriendList from '@/components/FriendList.vue'
 import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
+import { useChannelStore } from '@/stores/channel'
 import MemberList from '@/components/MemberList.vue'
 import UserProfile from '@/components/UserProfile.vue'
+import { de } from 'element-plus/es/locales.mjs'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -64,7 +66,6 @@ const router = createRouter({
           path: ':server_id([a-zA-Z0-9]+)',
           components: {
             channelList: ChannelList,
-            channelRoom: ChannelRoom,
             memberList: MemberList,
           },
         },
@@ -91,6 +92,7 @@ router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
   const isAuth = await userStore.isAuthenticated() // 權限判斷
   const chatStore = useChatStore()
+  const channelStore = useChannelStore()
 
   // 如果需要授權且已經登入，則繼續
   if (to.meta.requiresAuth && isAuth) {
@@ -102,15 +104,43 @@ router.beforeEach(async (to, from, next) => {
       }
     }
 
+    // 處理伺服器頁面自動重定向邏輯
+    if (to.path.match(/^\/channels\/[a-zA-Z0-9]+$/) && to.params.server_id) {
+      const serverId = to.params.server_id as string
+      console.log(`路由守衛: 處理伺服器頁面 ${serverId}`)
+      
+      try {
+        // 載入頻道列表
+        await channelStore.fetchServerChannels(serverId)
+        
+        // 獲取預設頻道
+        const defaultChannel = channelStore.getDefaultChannelForServer(serverId)
+        
+        if (defaultChannel) {
+          console.log(`路由守衛: 重定向到頻道 ${defaultChannel.id}`)
+          // 重定向到預設頻道
+          return next(`/channels/${serverId}/${defaultChannel.id}`)
+        } else {
+          // 如果沒有預設頻道，停留在伺服器頁面
+          console.warn(`路由守衛: 沒有找到伺服器 ${serverId} 的預設頻道`)
+          return next()
+        }
+      } catch (error) {
+        console.error('路由守衛: 載入頻道失敗:', error)
+        // 發生錯誤時，停留在當前頁面而不是跳轉
+        return next()
+      }
+    }
+
     // 如果需要 WebSocket 連接且已經登入，則建立連接
     if (to.meta.requiresWebSocket) {
       // 連接 WebSocket
-      if (!chatStore.checkWsConnection()) {
+      if (! (await chatStore.checkWsConnection())) {
         await chatStore.wsConnect()
       }
     }
 
-    next()
+    return next()
   }
 
   // 如果需要授權且未登入，則跳轉到登入頁面
@@ -118,8 +148,8 @@ router.beforeEach(async (to, from, next) => {
     return (location.href = '/login')
   }
 
-  // 如果不需要授權且已經登入，則跳轉到聊天頁面
-  if (!to.meta.requiresAuth && isAuth) {
+  // 如果不需要授權且已經登入，且不是在 channels 路由下，則跳轉到聊天頁面
+  if (!to.meta.requiresAuth && isAuth && !to.path.startsWith('/channels')) {
     return (location.href = '/channels/@me')
   }
 

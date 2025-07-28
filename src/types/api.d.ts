@@ -47,6 +47,38 @@ export namespace ServerAPI {
       limit: number
       total_pages: number
     }
+
+    export interface ServerMember {
+      user_id: string
+      username: string
+      nickname: string
+      picture: string
+      role: 'owner' | 'admin' | 'member'
+      is_online: boolean
+      last_active_at: number
+      joined_at: number
+    }
+
+    export interface ServerChannel {
+      id: string
+      server_id: string
+      name: string
+      type: 'text' | 'voice'
+      picture_url: string
+      description: string
+    }
+
+    export interface ServerDetail {
+      id: string
+      name: string
+      picture_url: string
+      description: string
+      member_count: number
+      is_public: boolean
+      owner_id: string
+      members: ServerMember[]
+      channels: ServerChannel[]
+    }
   }
 }
 
@@ -165,9 +197,14 @@ export namespace MessageAPI {
     data: Response.JoinRoom
   }
 
+  export interface PongResponse {
+    action: 'pong'
+    data: null
+  }
+  
   // 請求和響應的聯合類型
   export type WsRequestMessage = SendMessageRequestMessage | JoinRoomRequestMessage
-  export type WsResponseMessage = SendMessageResponseMessage | JoinRoomResponseMessage
+  export type WsResponseMessage = SendMessageResponseMessage | JoinRoomResponseMessage | PongResponse
 
   // // 定義具體的消息類型
   // export interface SendMessageWsMessage<T extends Request.SendMessage | Response.SendMessage> {

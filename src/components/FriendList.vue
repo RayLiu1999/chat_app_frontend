@@ -55,10 +55,10 @@
             @click="goToChat(friend)"
           >
             <div class="flex items-center space-x-4">
-              <AvatarImage :src="friend.pic_url" alt="User" size="md" />
+              <AvatarImage :src="friend.pic_url" alt="User" size="md" :status="friend.is_online ? 'online' : 'offline'" />
               <div>
                 <div class="text">{{ friend.nickname }}</div>
-                <div class="weak-text text-sm">{{ friend.status === 'online' ? '線上' : '離線' }}</div>
+                <div class="weak-text text-sm">{{ friend.is_online ? '線上' : '離線' }}</div>
               </div>
             </div>
 
@@ -148,7 +148,7 @@
       )
     } else if (selectedStatus.value === 'online') {
       // 線上狀態
-      return friendsArray.filter((friend: User) => friend.status === 'online')
+      return friendsArray.filter((friend: User) => friend.is_online === true)
     } else if (selectedStatus.value === 'pending' || selectedStatus.value === 'blocked') {
       // 等待回覆中和已封鎖狀態獨立計算
       return friendsArray.filter((friend: User) => friend.status === selectedStatus.value)

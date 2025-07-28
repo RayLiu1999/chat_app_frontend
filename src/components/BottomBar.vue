@@ -5,10 +5,11 @@
         :src="userStore.userData?.pic_url"
         alt="User"
         size="md"
+        status="online"
       />
       <div class="ml-2 flex-1 min-w-0">
         <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userStore.userData?.nickname }}</div>
-        <div class="text-xs text-green-500">線上</div>
+        <div class="text-xs weak-text">線上</div>
       </div>
       <div class="weak-text ml-auto flex space-x-2">
         <el-tooltip

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { Server } from '@/types/chat'
+import type { Server, ServerDetail, ServerMember } from '@/types/chat'
 import type { ServerAPI } from '@/types/api'
 import api from '@/api/axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -12,6 +12,8 @@ export const useServerStore = defineStore('server', () => {
   
   // 資料
   const servers = ref<Server[]>([])
+  const serverDetails = ref<Map<string, ServerDetail>>(new Map())
+  const currentServerDetail = ref<ServerDetail | null>(null)
   
   // 取得伺服器列表
   const fetchServerList = async () => {
@@ -26,6 +28,64 @@ export const useServerStore = defineStore('server', () => {
       console.error('獲取伺服器列表失敗:', error)
       ElMessage.error('獲取伺服器列表失敗')
     }
+  }
+
+  // 取得伺服器詳細資訊
+  const fetchServerDetail = async (serverId: string): Promise<ServerDetail | null> => {
+    try {
+      // 如果已經有快取，直接返回
+      if (serverDetails.value.has(serverId)) {
+        const detail = serverDetails.value.get(serverId)!
+        currentServerDetail.value = detail
+        return detail
+      }
+
+      const { data: response } = await api.get(`/servers/${serverId}/detail`)
+      if (response.status === 'success') {
+        const detail = response.data as ServerDetail
+        // 快取伺服器詳細資訊
+        serverDetails.value.set(serverId, detail)
+        currentServerDetail.value = detail
+        return detail
+      } else {
+        throw new Error(response.message)
+      }
+    } catch (error) {
+      console.error('獲取伺服器詳細資訊失敗:', error)
+      ElMessage.error('獲取伺服器詳細資訊失敗')
+      return null
+    }
+  }
+
+  // 清除伺服器詳細資訊快取
+  const clearServerDetailCache = (serverId?: string) => {
+    if (serverId) {
+      serverDetails.value.delete(serverId)
+      if (currentServerDetail.value?.id === serverId) {
+        currentServerDetail.value = null
+      }
+    } else {
+      serverDetails.value.clear()
+      currentServerDetail.value = null
+    }
+  }
+
+  // 根據使用者 ID 獲取成員資訊
+  const getMemberByUserId = (userId: string): ServerMember | null => {
+    if (!currentServerDetail.value) return null
+    return currentServerDetail.value.members.find(member => member.user_id === userId) || null
+  }
+
+  // 獲取線上成員列表
+  const getOnlineMembers = (): ServerMember[] => {
+    if (!currentServerDetail.value) return []
+    return currentServerDetail.value.members.filter(member => member.is_online)
+  }
+
+  // 獲取離線成員列表
+  const getOfflineMembers = (): ServerMember[] => {
+    if (!currentServerDetail.value) return []
+    return currentServerDetail.value.members.filter(member => !member.is_online)
   }
 
   // 創建伺服器
@@ -117,9 +177,9 @@ export const useServerStore = defineStore('server', () => {
         ElMessage.success('成功離開伺服器')
         
         // 如果當前在被離開的伺服器頁面，跳轉到私人訊息
-        if (router.currentRoute.value.params.server_id === serverId) {
-          router.push('/channels/@me')
-        }
+        // if (router.currentRoute.value.params.server_id === serverId) {
+        //   router.push('/channels/@me')
+        // }
         
         return response.data
       } else {
@@ -192,7 +252,14 @@ export const useServerStore = defineStore('server', () => {
 
   return {
     servers,
+    serverDetails,
+    currentServerDetail,
     fetchServerList,
+    fetchServerDetail,
+    clearServerDetailCache,
+    getMemberByUserId,
+    getOnlineMembers,
+    getOfflineMembers,
     createServer,
     deleteServer,
     leaveServer,

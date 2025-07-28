@@ -4,6 +4,29 @@ export interface Server {
   picture_url: string
 }
 
+export interface ServerMember {
+  user_id: string
+  username: string
+  nickname: string
+  picture: string
+  role: 'owner' | 'admin' | 'member'
+  is_online: boolean
+  last_active_at: number
+  joined_at: number
+}
+
+export interface ServerDetail {
+  id: string
+  name: string
+  picture_url: string
+  description: string
+  member_count: number
+  is_public: boolean
+  owner_id: string
+  members: ServerMember[]
+  channels: Channel[]
+}
+
 export interface Channel {
   id: string
   server_id: string

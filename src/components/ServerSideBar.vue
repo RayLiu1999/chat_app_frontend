@@ -2,7 +2,7 @@
   <div class="bg-#161f73 relative flex w-16 flex-col items-center py-4">
     <div>
       <div class="channel-group flex items-center">
-        <span class="host-border-none"></span>
+        <span :class="isCurrentPage('@me') ? 'host-border-active' : 'host-border-none'"></span>
         <RouterLink v-slot="{ navigate }" to="/channels/@me" custom>
           <el-tooltip effect="dark" content="私人訊息" placement="left-start">
             <button @click="navigate">
@@ -21,7 +21,7 @@
     </div>
     <div class="flex flex-col space-y-3">
       <div v-if="servers.length > 0" v-for="server in servers" :key="server.id" class="channel-group flex items-center">
-        <span class="host-border-active"></span>
+        <span :class="isCurrentPage(server.id) ? 'host-border-active' : 'host-border-none'"></span>
         <RouterLink v-slot="{ navigate }" :to="`/channels/${server.id}`" custom>
           <el-tooltip
             effect="dark"
@@ -88,16 +88,29 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted } from 'vue'
-  import { useServerStore } from '@/stores/server'
-  import type { Server } from '@/types/chat'
-  import PositionMenu from './PositionMenu.vue'
-  import ExploreServersDialog from './dialogs/ExploreServersDialog.vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useServerStore } from '@/stores/server'
+import type { Server } from '@/types/chat'
+import PositionMenu from './PositionMenu.vue'
+import ExploreServersDialog from './dialogs/ExploreServersDialog.vue'
+import AvatarImage from './AvatarImage.vue'
+import AddServerDialog from './dialogs/AddServerDialog.vue'
 
-  const serverStore = useServerStore()
-  const servers = ref<Server[]>([])
+const route = useRoute()
+const serverStore = useServerStore()
+const servers = ref<Server[]>([])
 
-  // 伺服器設定下拉選單
+// 判斷是否為當前頁面
+const isCurrentPage = (pageId: string): boolean => {
+  if (pageId === '@me') {
+    // 檢查是否在私人訊息頁面
+    return route.path.startsWith('/channels/@me')
+  } else {
+    // 檢查是否在對應的伺服器頁面
+    return route.params.server_id === pageId
+  }
+}  // 伺服器設定下拉選單
   const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
   // 顯示tooltip
   const tooltipDisable = ref(false)
@@ -184,5 +197,23 @@
   .channel-group:hover .host-border-active,
   .channel-group:hover .host-border-none {
     height: 10px;
+  }
+  
+  .host-border-active,
+  .host-border-none {
+    position: absolute;
+    left: 0;
+    width: 4px;
+    background-color: white;
+    border-radius: 0 4px 4px 0;
+    transition: height 0.2s ease;
+  }
+  
+  .host-border-active {
+    height: 40px;
+  }
+  
+  .host-border-none {
+    height: 0;
   }
 </style>
