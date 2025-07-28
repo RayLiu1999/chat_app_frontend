@@ -357,6 +357,11 @@ export const useChatStore = defineStore('chat', () => {
     return data
   }
 
+  // 清空訊息列表
+  const clearMessages = () => {
+    messages.value = []
+  }
+
   /**
    * 操作資料 Methods
    */
@@ -376,6 +381,7 @@ export const useChatStore = defineStore('chat', () => {
     fetchDMRoomList,
     fetchCreateDMRoom,
     fetchDMMessages,
-    fetchChannelMessages
+    fetchChannelMessages,
+    clearMessages,
   }
 })

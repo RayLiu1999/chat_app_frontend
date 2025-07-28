@@ -38,8 +38,8 @@
     </div>
 
     <!-- Chat Messages -->
-    <el-scrollbar ref="scrollbarRef" :always="true" class="custom-scrollbar">
-      <div ref="innerRef" class="bg-#080a28 flex-1 overflow-y-auto px-4">
+    <div ref="scrollbarRef" class="custom-scrollbar">
+      <div ref="messagesListRef" class="bg-#080a28 px-4 messages-list">
         <div
           v-for="(message, idx) in messages"
           :key="message.id"
@@ -76,7 +76,7 @@
           </div>
         </div>
       </div>
-    </el-scrollbar>
+    </div>
 
     <!-- Chat Input -->
     <div class="bg-#080a28 flex items-center space-x-2 p-4">
@@ -96,13 +96,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch, computed, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useChatStore } from '@/stores/chat'
 import { useChannelStore } from '@/stores/channel'
 import { useServerStore } from '@/stores/server'
 import { useUserStore } from '@/stores/user'
-import { ElScrollbar } from 'element-plus'
 import { formatTimestamp, ymd, ymdHm, formatDateHeader } from '@/utils/time'
 import type { Message, DMRoom, Channel } from '@/types/chat'
 import type { MessageAPI } from '@/types/api'
@@ -128,8 +127,8 @@ const route = useRoute()
 
 // Refs
 const UserProfileVisible = ref(false)
-const innerRef = ref<HTMLElement | null>(null)
-const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
+const messagesListRef = ref<HTMLElement | null>(null)
+const scrollbarRef = ref<HTMLElement | null>(null)
 const loadingMore = ref(false)
 
 // Computed
@@ -240,11 +239,11 @@ const isNewDate = (idx: number, message: Message): boolean => {
 }
 
 const scrollToBottom = async () => {
-  if (!scrollbarRef.value || !innerRef.value) {
-    console.warn('ChatRoom: scrollbarRef or innerRef is null, skipping scroll')
+  if (!scrollbarRef.value) {
+    console.warn('ChatRoom: scrollbarRef is null, skipping scroll')
     return
   }
-  scrollbarRef.value.setScrollTop(innerRef.value.clientHeight)
+  scrollbarRef.value.scrollTop = scrollbarRef.value.scrollHeight
 }
 
 const delayedScrollToBottom = async () => {
@@ -253,10 +252,9 @@ const delayedScrollToBottom = async () => {
 }
 
 const isUserNearBottom = (): boolean => {
-  const wrapper = scrollbarRef.value?.wrapRef as HTMLElement | undefined
-  if (!wrapper) return true
+  if (!scrollbarRef.value) return true
   const threshold = 20
-  return wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - threshold
+  return scrollbarRef.value.scrollTop + scrollbarRef.value.clientHeight >= scrollbarRef.value.scrollHeight - threshold
 }
 
 const loadMore = async () => {
@@ -265,14 +263,13 @@ const loadMore = async () => {
   if (messages.value.length === 0 || messages.value.length % 50 !== 0) return
   if (loadingMore.value) return
   
-  const wrapper = scrollbarRef.value?.wrapRef as HTMLElement | undefined
-  if (!wrapper) {
-    console.warn('ChatRoom: wrapper is null, skipping loadMore')
+  if (!scrollbarRef.value) {
+    console.warn('ChatRoom: scrollbarRef is null, skipping loadMore')
     return
   }
   
   loadingMore.value = true
-  const prevHeight = wrapper.scrollHeight
+  const prevHeight = scrollbarRef.value.scrollHeight
   const topMsgId = messages.value[0].id
   
   await chatStore.fetchDMMessages({
@@ -282,8 +279,10 @@ const loadMore = async () => {
   })
   
   await nextTick(() => {
-    const newHeight = wrapper.scrollHeight
-    wrapper.scrollTop = newHeight - prevHeight
+    if (scrollbarRef.value) {
+      const newHeight = scrollbarRef.value.scrollHeight
+      scrollbarRef.value.scrollTop = newHeight - prevHeight
+    }
   })
   
   loadingMore.value = false
@@ -295,6 +294,9 @@ const initializeRoom = async () => {
     console.warn('ChatRoom: roomId is empty, skipping initialization')
     return
   }
+
+  // 先清空訊息列表
+  chatStore.clearMessages()
 
   try {
     // 加入房間
@@ -339,16 +341,21 @@ onMounted(async () => {
 
     // 只為 DM 添加滾動監聽器
     if (props.roomType === 'dm') {
-      const wrapper = scrollbarRef.value?.wrapRef as HTMLElement | undefined
-      if (wrapper) {
-        wrapper.addEventListener('scroll', () => {
-          if (wrapper.scrollTop === 0) {
+      if (scrollbarRef.value) {
+        scrollbarRef.value.addEventListener('scroll', () => {
+          if (scrollbarRef.value && scrollbarRef.value.scrollTop === 0) {
             loadMore()
           }
         })
       }
     }
+    
+    // 移除檢測邏輯，使用純CSS方案
   }
+})
+
+onUnmounted(() => {
+  // 移除了 resize 監聽器
 })
 
 // Watchers
@@ -368,5 +375,37 @@ watch(() => props.roomId, async (newRoomId) => {
 <style lang="scss" scoped>
 .custom-scrollbar {
   height: calc(100vh - 120px);
+  overflow-y: auto;
+  
+  // Firefox 支援
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+
+  // 自訂卷軸樣式
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 120px); // 確保至少填滿容器高度
+  justify-content: flex-end; // 訊息貼底部
+  padding-bottom: 4px; // 添加一點底部間距
 }
 </style>

@@ -125,6 +125,17 @@ export namespace UserAPI {
       username: string
       password: string
     }
+
+    export interface UpdateProfile {
+      username?: string
+      nickname?: string
+      status?: string
+    }
+
+    export interface UploadImage {
+      image: File
+      type: 'avatar' | 'banner'
+    }
   }
 
   export namespace Response {
@@ -133,6 +144,15 @@ export namespace UserAPI {
       username: string
       nickname: string
       pic_url: string
+      status: string
+      is_online: boolean
+      banner_url?: string
+      created_at: number
+      updated_at: number
+    }
+
+    export interface UploadImage {
+      url: string
     }
   }
 }

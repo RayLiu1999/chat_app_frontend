@@ -1,6 +1,6 @@
 <template>
   <!-- 外框保持固定寬高 -->
-  <div :class="containerClass" class="relative">
+  <div :class="containerClass">
     <!-- 真正的 <img> -->
     <img
       :src="displaySrc"
@@ -27,12 +27,14 @@ import defaultAvatar from '@/assets/images/user1.jpg'
 interface Props {
   src: string
   alt?: string
-  size?: 'sm' | 'xs' | 'md' | 'xl' | 'lg'    // 預設 md
-  status?: 'online' | 'offline'              // 狀態指示器：線上/離線
+  size?: 'sm' | 'xs' | 'md' | 'xl' | 'lg' | 'custom'    // 新增 custom 選項
+  customSize?: string                                     // 自定義大小的 class
+  status?: 'online' | 'offline'                          // 狀態指示器：線上/離線
 }
 const props = withDefaults(defineProps<Props>(), {
   alt: '',
   size: 'md',
+  customSize: '',
 })
 
 /* -------- class 計算 -------- */
@@ -66,12 +68,22 @@ const displaySrc = computed(() =>
   props.src ? props.src : defaultAvatar
 )
 
-const containerClass = computed(() => `rounded-full flex-shrink-0 ${sizeMap[props.size]}`)
-const imgClass = computed(() => `object-cover rounded-full ${sizeMap[props.size]}`)
+// 獲取實際的大小 class
+const getActualSizeClass = computed(() => {
+  if (props.size === 'custom') {
+    return props.customSize
+  }
+  return sizeMap[props.size as keyof typeof sizeMap]
+})
+
+const containerClass = computed(() => `rounded-full flex-shrink-0 relative ${getActualSizeClass.value}`)
+const imgClass = computed(() => `object-cover rounded-full w-full h-full`)
 
 // 狀態指示器樣式
 const statusClass = computed(() => {
-  const baseClass = `${statusSizeMap[props.size]} ${statusPositionMap[props.size]}`
+  // 如果是自定義大小，使用中等大小的狀態指示器
+  const size = props.size === 'custom' ? 'md' : props.size
+  const baseClass = `${statusSizeMap[size as keyof typeof statusSizeMap]} ${statusPositionMap[size as keyof typeof statusPositionMap]}`
   const colorClass = props.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
   return `${baseClass} ${colorClass}`
 })
