@@ -157,6 +157,7 @@ import { ref, watch } from 'vue'
 import { useServerStore } from '@/stores/server'
 import { ElMessage } from 'element-plus'
 import AvatarImage from '@/components/AvatarImage.vue'
+import { useRouter } from 'vue-router'
 
 interface PublicServer {
   id: string
@@ -172,6 +173,7 @@ interface PublicServer {
 }
 
 const serverStore = useServerStore()
+const router = useRouter()
 const visible = ref(false)
 const searchQuery = ref('')
 const isLoading = ref(false)
@@ -276,18 +278,16 @@ const handleSearch = () => {
 
 // 加入伺服器
 const joinServer = async (server: PublicServer) => {
-  try {
-    const response = await serverStore.joinPublicServer(server.id)
-    
-    if (response) {
-      ElMessage.success(`成功加入伺服器：${server.name}`)
-      server.is_joined = true
-      // 可選：自動跳轉到新加入的伺服器
-      // router.push(`/channels/${server.id}`)
-    }
-  } catch (error) {
-    console.error('加入伺服器失敗:', error)
-    ElMessage.error('加入伺服器失敗')
+  const response = await serverStore.joinPublicServer(server.id)
+  if (response) {
+    // 更新伺服器狀態
+    server.is_joined = true
+
+    // 關閉對話框
+    visible.value = false
+
+    // 可選：自動跳轉到新加入的伺服器
+    router.push(`/channels/${server.id}`)
   }
 }
 

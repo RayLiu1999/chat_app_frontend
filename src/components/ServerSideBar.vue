@@ -99,7 +99,7 @@ import AddServerDialog from './dialogs/AddServerDialog.vue'
 
 const route = useRoute()
 const serverStore = useServerStore()
-const servers = ref<Server[]>([])
+const servers = computed(() => serverStore.servers || [])
 
 // 判斷是否為當前頁面
 const isCurrentPage = (pageId: string): boolean => {
@@ -126,7 +126,6 @@ const isCurrentPage = (pageId: string): boolean => {
   onMounted(async () => {
     await serverStore.fetchServerList()
     if (serverStore.servers) {
-      servers.value = serverStore.servers
     }
   })
 
@@ -169,26 +168,16 @@ const isCurrentPage = (pageId: string): boolean => {
   }
 
   const handleLeave = async () => {
-    try {
-      await serverStore.leaveServer(currentServerId.value)
-      // 重新載入伺服器列表
-      await serverStore.fetchServerList()
-      servers.value = serverStore.servers
-    } catch (error) {
-      // 錯誤處理已在 store 中完成
-    }
+    await serverStore.leaveServer(currentServerId.value)
+    // 重新載入伺服器列表
+    await serverStore.fetchServerList()
     menuRef.value?.hideMenu()
   }
 
   const handleDeleteServer = async () => {
-    try {
-      await serverStore.deleteServer(currentServerId.value)
-      // 重新載入伺服器列表
-      await serverStore.fetchServerList()
-      servers.value = serverStore.servers
-    } catch (error) {
-      // 錯誤處理已在 store 中完成
-    }
+    await serverStore.deleteServer(currentServerId.value)
+    // 重新載入伺服器列表
+    await serverStore.fetchServerList()
     menuRef.value?.hideMenu()
   }
 </script>
