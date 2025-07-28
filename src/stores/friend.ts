@@ -13,9 +13,9 @@ export const useFriendStore = defineStore('friend', () => {
   // 取得好友
   const fetchFriends = async () => {
     try {
-      const response = await api.get('/friends')
-      setFriends(response.data)
-      return response.data
+      const { data: response } = await api.get('/friends')
+      setFriends(response.data as User[])
+      return response
     } catch (error) {
       console.error('Failed to fetch friends:', error)
       return []
@@ -25,7 +25,7 @@ export const useFriendStore = defineStore('friend', () => {
   // 發送好友請求
   const sendFriendRequest = async (newFriendUsername: string) => {
     try {
-      const response = await api.post('/friends/', { username: newFriendUsername })
+      const { data: response } = await api.post('/friends/', { username: newFriendUsername })
       return response.data
     } catch (error) {
       console.error('Failed to send friend request:', error)
@@ -36,7 +36,7 @@ export const useFriendStore = defineStore('friend', () => {
   // 接受好友請求
   const acceptFriendRequest = async (friendId: string) => {
     try {
-      const response = await api.put(`/friends/${friendId}`, { status: 'accepted' })
+      const { data: response } = await api.put(`/friends/${friendId}`, { status: 'accepted' })
       await fetchFriends() // 重新獲取好友列表
       return response.data
     } catch (error) {
@@ -48,7 +48,7 @@ export const useFriendStore = defineStore('friend', () => {
   // 拒絕好友請求
   const rejectFriendRequest = async (friendId: string) => {
     try {
-      const response = await api.put(`/friends/${friendId}`, { status: 'rejected' })
+      const { data: response } = await api.put(`/friends/${friendId}`, { status: 'rejected' })
       await fetchFriends() // 重新獲取好友列表
       return response.data
     } catch (error) {

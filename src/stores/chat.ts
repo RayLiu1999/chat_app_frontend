@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { Server, Message, DMRoom } from '@/types/chat'
-import type { ServerAPI, MessageAPI, DMRoomAPI } from '@/types/api' 
+import type { Message, DMRoom } from '@/types/chat'
+import type { MessageAPI, DMRoomAPI } from '@/types/api' 
 import api from '@/api/axios'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -11,7 +11,6 @@ export const useChatStore = defineStore('chat', () => {
   const router = useRouter()
 
   // 資料
-  const servers = ref<Server[]>([])
   const channels = ref(['general', 'random', 'help'])
   const messages = ref<Message[]>([])
   const dm_rooms = ref<DMRoom[]>([])
@@ -32,6 +31,8 @@ export const useChatStore = defineStore('chat', () => {
     API_URL = 'ws://' + API_DOMAIN
   }
 
+  let pingInterval: number | undefined
+
   // 初始化 WebSocket 連接
   const wsConnect = async (): Promise<boolean> => {
     const userStore = useUserStore()
@@ -48,6 +49,8 @@ export const useChatStore = defineStore('chat', () => {
         socket.onopen = () => {
           console.log('WebSocket 連接已建立')
           reconnectAttempts = 0 // 重置重連計數
+          // 啟動 ping timer，每 30 秒發送一次
+          pingInterval = window.setInterval(sendPing, 30000)
           resolve(true)
         }
 
@@ -69,6 +72,10 @@ export const useChatStore = defineStore('chat', () => {
 
         socket.onclose = () => {
           console.log('WebSocket 連接已關閉')
+          if (pingInterval) {
+            clearInterval(pingInterval)
+            pingInterval = undefined
+          }
           reWsConnect()
         }
 
@@ -99,6 +106,10 @@ export const useChatStore = defineStore('chat', () => {
 
   // 關閉 WebSocket 連接
   const disWsConnect = async () => {
+    if (pingInterval) {
+      clearInterval(pingInterval)
+      pingInterval = undefined
+    }
     if (socket) {
       socket.close()
     }
@@ -137,32 +148,20 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  const sendPing = () => {
+    if (checkWsConnection()) {
+      const request = { action: 'ping' }
+      socket.send(JSON.stringify(request))
+    }
+  }
+
   // function setCurrentChannel(channel: string) {
   //   currentChannel.value = channel
   // }
 
-  // 取得伺服器列表
-  const fetchServerList = async () => {
-    const response = await api.get('/servers')
-    servers.value = response.data as Server[]
-    console.log(servers.value)
-  }
-
-  // 創建伺服器
-  const createServer = async (server: ServerAPI.Request.Create) => {
-    const formData = new FormData()
-    formData.append('name', server.name)
-    if (server.picture) {
-      formData.append('picture', server.picture)
-    }
-
-    const response = await api.post('/servers', formData)
-    servers.value.push(response.data as Server)
-  }
-
   // 取得DM聊天室列表
   const fetchDMRoomList = async () => {
-    const response = await api.get('/dm_rooms')
+    const { data: response } = await api.get('/dm_rooms')
     const data = response.data as DMRoom[]
     dm_rooms.value = data
 
@@ -175,7 +174,7 @@ export const useChatStore = defineStore('chat', () => {
    * @returns DMRoom
    */
   const fetchCreateDMRoom = async (dm_room: DMRoomAPI.Request.Create) => {
-    const response = await api.post('/dm_rooms', dm_room)
+    const { data: response } = await api.post('/dm_rooms', dm_room)
     const data = response.data as DMRoom
 
     // 如果ID重複，則更新
@@ -202,7 +201,28 @@ export const useChatStore = defineStore('chat', () => {
     if (message.message_id) {
       params.before = message.message_id
     }
-    const response = await api.get('/dm_rooms/' + message.room_id + '/messages', { params })
+    const { data: response } = await api.get('/dm_rooms/' + message.room_id + '/messages', { params })
+    const data = response.data as Message[]
+
+    // 依序加入
+    messages.value.push(...data)
+
+    // 去重
+    messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
+
+    // 排序
+    messages.value.sort((a, b) => a.timestamp - b.timestamp)
+
+    return data
+  }
+
+  // 取得頻道訊息
+  const fetchChannelMessages = async (message: MessageAPI.Request.GetMessages) => {
+    const params: { before?: string; limit: number } = { limit: message.limit }
+    if (message.message_id) {
+      params.before = message.message_id
+    }
+    const { data: response } = await api.get('/channels/' + message.room_id + '/messages', { params })
     const data = response.data as Message[]
 
     // 依序加入
@@ -227,16 +247,14 @@ export const useChatStore = defineStore('chat', () => {
     checkWsConnection,
     joinRoom,
     sendMessage,
-    servers,
     messages,
     channels,
     dm_rooms,
     currentChannel,
-    fetchServerList,
     fetchHideDMRoom,
-    createServer,
     fetchDMRoomList,
     fetchCreateDMRoom,
-    fetchDMMessages
+    fetchDMMessages,
+    fetchChannelMessages
   }
 })

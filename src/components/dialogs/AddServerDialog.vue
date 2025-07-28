@@ -67,7 +67,7 @@
 
 <script lang="ts" setup>
   import { ref, watch } from 'vue'
-  import { useChatStore } from '@/stores/chat'
+  import { useServerStore } from '@/stores/server'
   import type { ServerAPI } from '@/types/api'
 
   const visible = ref(false)
@@ -88,14 +88,14 @@
   }
 
   const handleCreateServer = () => {
-    const chatStore = useChatStore()
+    const serverStore = useServerStore()
     const name = input.value
     const file = fileInput.value?.files?.[0] || null
     const server: ServerAPI.Request.Create = {
       name,
       picture: file as Blob,
     }
-    chatStore.createServer(server)
+    serverStore.createServer(server)
     visible.value = false
   }
 

@@ -15,10 +15,10 @@ export const useUserStore = defineStore('user', () => {
   // 登入
   const login = async (email: string, password: string): Promise<APIResponse> => {
     try {
-      const response = await api.post('/login', {
+      const { data: response } = await api.post('/login', {
         email,
         password,
-      }) as APIResponse
+      })
 
       // 設置 token
       setAccessToken(response.data.access_token)
@@ -43,7 +43,7 @@ export const useUserStore = defineStore('user', () => {
   // 取得 user
   const fetchUser = async () => {
     try {
-      const response = await api.get('/user') as APIResponse
+      const { data: response } = await api.get('/user')
       const data = response.data as User
       userData.value = data
 
@@ -63,7 +63,7 @@ export const useUserStore = defineStore('user', () => {
   // 刷新 access token
   const refreshAccessToken = async (): Promise<string> => {
     try {
-      const response = await api.post('/refresh_token')
+      const { data: response } = await api.post('/refresh_token')
       const token = response.data.access_token
       const userStore = useUserStore()
       userStore.setAccessToken(token)

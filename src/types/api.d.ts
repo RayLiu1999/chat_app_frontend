@@ -13,6 +13,10 @@ export namespace ServerAPI {
       name: string
       picture?: Blob
     }
+
+    export interface Join {
+      server_id: string
+    }
   }
 
   export namespace Response {
@@ -20,6 +24,28 @@ export namespace ServerAPI {
       id: string
       name: string
       picture_url: string
+    }
+
+    export interface PublicServer {
+      id: string
+      name: string
+      description: string
+      picture_url: string
+      member_count: number
+      is_joined: boolean
+      owner_name: string
+      created_at: number
+      online_count: number
+      tags?: string[]
+      is_joined?: boolean
+    }
+
+    export interface SearchResponse {
+      servers: PublicServer[]
+      total_count: number
+      page: number
+      limit: number
+      total_pages: number
     }
   }
 }
@@ -29,15 +55,24 @@ export namespace ChannelAPI {
   export namespace Request {
     export interface Create {
       name: string
-      picture?: Blob
+      type: 'text' | 'voice'
+      category_id?: string
+    }
+
+    export interface Update {
+      name?: string
+      type?: 'text' | 'voice'
+      category_id?: string
     }
   }
 
   export namespace Response {
     export interface Channel {
       id: string
+      server_id: string
       name: string
-      // ...其他屬性
+      type: 'text' | 'voice'
+      category_id?: string
     }
   }
 }

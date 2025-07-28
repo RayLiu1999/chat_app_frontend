@@ -29,7 +29,7 @@
             placement="left-start"
             :disabled="tooltipDisable"
           >
-            <button @click="navigate" @contextmenu="handleRightClick($event)">
+            <button @click="navigate" @contextmenu="handleRightClick($event, server.id)">
               <AvatarImage :src="server.picture_url" alt="Server Image" size="xl" />
             </button>
           </el-tooltip>
@@ -54,11 +54,26 @@
           </div>
         </button>
       </el-tooltip>
+      <el-tooltip effect="dark" content="探索伺服器" placement="left-start">
+        <button @click="ExploreServersDialogVisible = true">
+          <div
+            class="hover:bg-#2b3375 flex size-12 items-center justify-center rounded-full bg-[rgba(128,128,128,0.5)]"
+          >
+            <span class="color-white">
+              <i class="bi bi-compass"></i>
+            </span>
+          </div>
+        </button>
+      </el-tooltip>
       </div>
     </div>
   <AddServerDialog
     :dialog-visible="AddServerDialogVisible"
     @update-visible="handleAddServerDialog"
+  />
+  <ExploreServersDialog
+    :dialog-visible="ExploreServersDialogVisible"
+    @update-visible="handleExploreServersDialog"
   />
   <PositionMenu ref="menuRef">
     <template #item>
@@ -67,36 +82,44 @@
       <li @click="handleSettings">伺服器設定</li>
       <li @click="handleNotification">通知設定</li>
       <li @click="handleLeave" class="danger">離開伺服器</li>
+      <li @click="handleDeleteServer" class="danger">刪除伺服器</li>
     </template>
   </PositionMenu>
 </template>
 
 <script lang="ts" setup>
   import { ref, onMounted } from 'vue'
-  import { useChatStore } from '@/stores/chat'
+  import { useServerStore } from '@/stores/server'
   import type { Server } from '@/types/chat'
   import PositionMenu from './PositionMenu.vue'
+  import ExploreServersDialog from './dialogs/ExploreServersDialog.vue'
 
-  const chatStore = useChatStore()
+  const serverStore = useServerStore()
   const servers = ref<Server[]>([])
 
   // 伺服器設定下拉選單
   const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
   // 顯示tooltip
   const tooltipDisable = ref(false)
+  // 當前右鍵點擊的伺服器ID
+  const currentServerId = ref<string>('')
 
   // 使用 ref 來追蹤 AddServerDialog 的顯示狀態
   const AddServerDialogVisible = ref(false)
+  
+  // 使用 ref 來追蹤 ExploreServersDialog 的顯示狀態
+  const ExploreServersDialogVisible = ref(false)
 
   onMounted(async () => {
-    await chatStore.fetchServerList()
-    if (chatStore.servers) {
-      servers.value = chatStore.servers
+    await serverStore.fetchServerList()
+    if (serverStore.servers) {
+      servers.value = serverStore.servers
     }
   })
 
   // 監聽contextMenuVisible判斷tooltip
-  const handleRightClick = (event: { clientX: number; clientY: number }) => {
+  const handleRightClick = (event: { clientX: number; clientY: number }, serverId: string) => {
+    currentServerId.value = serverId
     menuRef.value?.showMenu({
       x: event.clientX,
       y: event.clientY
@@ -108,24 +131,51 @@
     AddServerDialogVisible.value = value
   }
 
+  // 更新 ExploreServersDialog 的顯示狀態
+  const handleExploreServersDialog = (value: boolean) => {
+    ExploreServersDialogVisible.value = value
+  }
+
   // 右鍵選單處理函數
   const handleInvite = () => {
     // 處理邀請好友的邏輯
+    console.log('邀請好友到伺服器:', currentServerId.value)
     menuRef.value?.hideMenu()
   }
 
   const handleSettings = () => {
     // 處理伺服器設定的邏輯
+    console.log('打開伺服器設定:', currentServerId.value)
     menuRef.value?.hideMenu()
   }
 
   const handleNotification = () => {
     // 處理通知設定的邏輯
+    console.log('打開通知設定:', currentServerId.value)
     menuRef.value?.hideMenu()
   }
 
-  const handleLeave = () => {
-    // 處理離開伺服器的邏輯
+  const handleLeave = async () => {
+    try {
+      await serverStore.leaveServer(currentServerId.value)
+      // 重新載入伺服器列表
+      await serverStore.fetchServerList()
+      servers.value = serverStore.servers
+    } catch (error) {
+      // 錯誤處理已在 store 中完成
+    }
+    menuRef.value?.hideMenu()
+  }
+
+  const handleDeleteServer = async () => {
+    try {
+      await serverStore.deleteServer(currentServerId.value)
+      // 重新載入伺服器列表
+      await serverStore.fetchServerList()
+      servers.value = serverStore.servers
+    } catch (error) {
+      // 錯誤處理已在 store 中完成
+    }
     menuRef.value?.hideMenu()
   }
 </script>

@@ -13,7 +13,7 @@
         </span>
         <div class="mb-4 flex flex-col text-left">
           <span class="text-base font-medium">建立頻道</span>
-          <span class="text-xs">在 文字頻道中</span>
+          <span class="text-xs">在 {{ channelTypeText }}頻道中</span>
         </div>
 
         <div class="mb-4">
@@ -69,12 +69,16 @@
             <span class="text-xs font-medium">頻道名稱</span>
           </div>
           <div class="flex items-center">
-            <span class="mr-2 text-lg">#</span>
+            <span class="mr-2 text-lg">
+              <i v-if="selectedType === 'text'" class="bi bi-hash"></i>
+              <i v-else class="bi bi-volume-up"></i>
+            </span>
             <input
-              v-model="input"
+              v-model="channelName"
               type="text"
               class="w-full rounded border-none bg-[#111420] px-4 py-2 text-white"
-              placeholder="新-頻道"
+              :placeholder="selectedType === 'text' ? '新-頻道' : '一般'"
+              @keydown.enter="handleCreateChannel"
             />
           </div>
         </div>
@@ -98,10 +102,19 @@
         </div>
 
         <div class="flex justify-between">
-          <button class="rounded px-4 py-2 text-gray-400 hover:underline" @click="visible = false">
+          <button 
+            class="rounded px-4 py-2 text-gray-400 hover:underline" 
+            @click="visible = false"
+          >
             取消
           </button>
-          <button class="rounded bg-[#5865f2] px-4 py-2 hover:bg-[#4752c4]">建立頻道</button>
+          <button 
+            class="rounded bg-[#5865f2] px-4 py-2 hover:bg-[#4752c4] disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="!channelName.trim()"
+            @click="handleCreateChannel"
+          >
+            建立頻道
+          </button>
         </div>
       </div>
     </el-dialog>
@@ -109,44 +122,79 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import type { ChannelAPI } from '@/types/api'
 
-  const selectedType = ref('text')
-  const visible = ref(false)
-  const input = ref('')
-  const isPrivate = ref(false)
+const selectedType = ref<'text' | 'voice'>('text')
+const visible = ref(false)
+const channelName = ref('')
+const isPrivate = ref(false)
 
-  // 初始化對話框內容
-  const initDialogContent = () => {
-    input.value = ''
-    isPrivate.value = false
+const props = defineProps<{
+  dialogVisible: boolean
+  channelType?: 'text' | 'voice'
+}>()
+
+const emit = defineEmits<{
+  (event: 'updateVisible', value: boolean): void
+  (event: 'createChannel', data: ChannelAPI.Request.Create): void
+}>()
+
+// 計算屬性
+const channelTypeText = computed(() => {
+  return selectedType.value === 'text' ? '文字' : '語音'
+})
+
+// 初始化對話框內容
+const initDialogContent = () => {
+  channelName.value = ''
+  isPrivate.value = false
+  selectedType.value = props.channelType || 'text'
+}
+
+// 處理創建頻道
+const handleCreateChannel = () => {
+  if (!channelName.value.trim()) return
+  
+  const channelData: ChannelAPI.Request.Create = {
+    name: channelName.value.trim(),
+    type: selectedType.value
   }
+  
+  emit('createChannel', channelData)
+}
 
-  const props = defineProps<{
-    dialogVisible: boolean
-  }>()
+// 監聽 props 變化
+watch(
+  () => props.dialogVisible,
+  (newValue) => {
+    visible.value = newValue
+    if (newValue) {
+      initDialogContent()
+    }
+  }
+)
 
-  const emit = defineEmits<{
-    (event: 'updateVisible', value: boolean): void
-  }>()
+watch(
+  () => props.channelType,
+  (newType) => {
+    if (newType) {
+      selectedType.value = newType
+    }
+  }
+)
 
-  watch(
-    () => props.dialogVisible,
-    (newValue) => {
-      visible.value = newValue
-    },
-  )
-
-  watch(
-    () => visible.value,
-    (value) => {
-      emit('updateVisible', value)
-    },
-  )
+// 監聽內部狀態變化
+watch(
+  () => visible.value,
+  (value) => {
+    emit('updateVisible', value)
+  }
+)
 </script>
 
 <style lang="scss" scoped>
-  .dialog :deep(.el-dialog__header) {
-    padding: 0;
-  }
+.dialog :deep(.el-dialog__header) {
+  padding: 0;
+}
 </style>

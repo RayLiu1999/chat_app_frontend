@@ -8,7 +8,8 @@ export interface Channel {
   id: string
   server_id: string
   name: string
-  picture_url: string
+  type: 'text' | 'voice'
+  category_id?: string
 }
 export interface DMRoom {
   room_id: string

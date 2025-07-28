@@ -84,8 +84,7 @@ api.interceptors.response.use(
       resMsgStore.showSuccess(apiResponse.message)
     }
     
-    // 直接返回 response.data，而不是整個 response 對象
-    return response.data
+    return response
   },
   async (error) => {
     const { config, response } = error

@@ -10,6 +10,7 @@
       <!-- Main Content -->
       <RouterView name="friendList"></RouterView>
       <RouterView name="dmRoom"></RouterView>
+      <RouterView name="channelRoom"></RouterView>
       <!-- <RouterView name="userProfile"></RouterView> -->
       <!-- <RouterView name="memberList"></RouterView> -->
     </div>
