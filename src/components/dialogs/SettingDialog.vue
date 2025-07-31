@@ -105,12 +105,23 @@
         </div>
       </div>
     </el-dialog>
+    
+    <!-- 確認對話框 -->
+    <ConfirmDialog
+      v-model:visible="showConfirmDialog"
+      :title="confirmData.title"
+      :message="confirmData.message"
+      :type="confirmData.type"
+      :confirm-text="confirmData.confirmText"
+      @confirm="confirmData.onConfirm"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import ConfirmDialog from './ConfirmDialog.vue'
 import UserProfileSetting from '@/components/UserProfileSetting.vue'
 import AccountSetting from '@/components/AccountSetting.vue'
 import { useUserStore } from '@/stores/user'
@@ -139,6 +150,20 @@ const userStore = useUserStore()
 const visible = ref(false)
 const currentTab = ref('account')
 const searchQuery = ref('')
+const showConfirmDialog = ref(false)
+const confirmData = ref<{
+  title: string
+  message: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  confirmText: string
+  onConfirm: () => void
+}>({
+  title: '',
+  message: '',
+  type: 'info',
+  confirmText: '確認',
+  onConfirm: () => {}
+})
 
 // 設定選項
 const userSettingItems: SettingItem[] = [
@@ -243,23 +268,18 @@ const switchToProfile = () => {
 const handleSystemAction = async (action: string) => {
   switch (action) {
     case 'logout':
-      try {
-        await ElMessageBox.confirm(
-          '確定要登出嗎？',
-          '確認登出',
-          {
-            confirmButtonText: '登出',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }
-        )
-        
-        userStore.logout()
-        closeDialog()
-        ElMessage.success('已登出')
-      } catch (error) {
-        // 用戶取消
+      confirmData.value = {
+        title: '確認登出',
+        message: '確定要登出嗎？',
+        type: 'warning',
+        confirmText: '登出',
+        onConfirm: () => {
+          userStore.logout()
+          closeDialog()
+          ElMessage.success('已登出')
+        }
       }
+      showConfirmDialog.value = true
       break
   }
 }

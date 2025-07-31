@@ -94,6 +94,16 @@
     @update-visible="handleAddChannelDialog"
     @create-channel="handleCreateChannel"
   />
+
+  <!-- 確認對話框 -->
+  <ConfirmDialog
+    v-model:visible="showConfirmDialog"
+    :title="confirmData.title"
+    :message="confirmData.message"
+    :type="confirmData.type"
+    :confirm-text="confirmData.confirmText"
+    @confirm="confirmData.onConfirm"
+  />
 </template>
 
 <script setup lang="ts">
@@ -105,7 +115,7 @@ import type { Channel } from '@/types/chat'
 import type { ChannelAPI } from '@/types/api'
 import PositionMenu from './PositionMenu.vue'
 import AddChannelDialog from './dialogs/AddChannelDialog.vue'
-import { ElMessageBox } from 'element-plus'
+import ConfirmDialog from './dialogs/ConfirmDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -118,6 +128,20 @@ const showVoiceChannels = ref(true)
 const addChannelDialogVisible = ref(false)
 const selectedChannelType = ref<'text' | 'voice'>('text')
 const selectedChannel = ref<Channel | null>(null)
+const showConfirmDialog = ref(false)
+const confirmData = ref<{
+  title: string
+  message: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  confirmText: string
+  onConfirm: () => void
+}>({
+  title: '',
+  message: '',
+  type: 'info',
+  confirmText: '確認',
+  onConfirm: () => {}
+})
 
 // 右鍵選單引用
 const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
@@ -192,32 +216,27 @@ const editChannel = () => {
 }
 
 // 刪除頻道
-const deleteChannel = async () => {
+const deleteChannel = () => {
   if (!selectedChannel.value) return
   
-  try {
-    await ElMessageBox.confirm(
-      `確定要刪除頻道「${selectedChannel.value.name}」嗎？此動作無法復原。`,
-      '刪除頻道',
-      {
-        confirmButtonText: '刪除',
-        cancelButtonText: '取消',
-        type: 'warning',
-        confirmButtonClass: 'el-button--danger'
-      }
-    )
-    
-    const success = await channelStore.deleteChannel(selectedChannel.value.id)
-    if (success) {
-      // 如果刪除的是當前頻道，跳轉到伺服器首頁
-      if (isCurrentChannel(selectedChannel.value.id)) {
-        router.push(`/channels/${currentServerId.value}`)
+  confirmData.value = {
+    title: '刪除頻道',
+    message: `確定要刪除頻道「${selectedChannel.value.name}」嗎？此動作無法復原。`,
+    type: 'warning',
+    confirmText: '刪除',
+    onConfirm: async () => {
+      if (!selectedChannel.value) return
+      
+      const success = await channelStore.deleteChannel(selectedChannel.value.id)
+      if (success) {
+        // 如果刪除的是當前頻道，跳轉到伺服器首頁
+        if (isCurrentChannel(selectedChannel.value.id)) {
+          router.push(`/channels/${currentServerId.value}`)
+        }
       }
     }
-  } catch {
-    // 使用者取消操作
   }
-  
+  showConfirmDialog.value = true
   menuRef.value?.hideMenu()
 }
 

@@ -52,7 +52,7 @@ export namespace ServerAPI {
       user_id: string
       username: string
       nickname: string
-      picture: string
+      picture_url: string
       role: 'owner' | 'admin' | 'member'
       is_online: boolean
       last_active_at: number
@@ -143,9 +143,9 @@ export namespace UserAPI {
       id: string
       username: string
       nickname: string
-      pic_url: string
       status: string
       is_online: boolean
+      picture_url: string
       banner_url?: string
       created_at: number
       updated_at: number

@@ -2,13 +2,13 @@
   <div class="bg-#070922 absolute bottom-0 w-60">
     <div class="flex items-center p-2">
       <AvatarImage
-        :src="userStore.userData?.pic_url"
+        :src="userData?.picture_url"
         alt="User"
         size="md"
         status="online"
       />
       <div class="ml-2 flex-1 min-w-0">
-        <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userStore.userData?.nickname }}</div>
+        <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userData?.nickname }}</div>
         <div class="text-xs weak-text">線上</div>
       </div>
       <div class="weak-text ml-auto flex space-x-2">
@@ -78,7 +78,7 @@
   <SettingDialog :dialog-visible="SettingDialogVisible" @update-visible="handleUpdate" />
 </template>
 <script lang="ts" setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import volumeOnSound from '@/assets/sounds/volume-on.mp3'
   import volumeOffSound from '@/assets/sounds/volume-off.mp3'
   import { useUserStore } from '@/stores/user'
@@ -91,6 +91,9 @@
   const micPermissionGranted = ref(false)
   const audioPermissionGranted = ref(false)
   const userStore = useUserStore()
+
+  // 計算屬性
+  const userData = computed(() => userStore.userData)
 
   // 創建音檔上下文
   const audioContext = ref<AudioContext | null>(null)

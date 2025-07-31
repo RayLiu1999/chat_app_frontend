@@ -8,7 +8,7 @@ export interface ServerMember {
   user_id: string
   username: string
   nickname: string
-  picture: string
+  picture_url: string
   role: 'owner' | 'admin' | 'member'
   is_online: boolean
   last_active_at: number

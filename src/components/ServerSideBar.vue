@@ -34,34 +34,26 @@
             </button>
           </el-tooltip>
         </RouterLink>
-        <!-- 自訂的下拉選單 -->
-        <!-- <div v-if="showMenu" :style="{ top: menuY + 'px', left: menuX + 'px' }" class="custom-menu">
-          <ul>
-            <li @click="menuAction('Action 1')">選項 1</li>
-            <li @click="menuAction('Action 2')">選項 2</li>
-            <li @click="menuAction('Action 3')">選項 3</li>
-          </ul>
-        </div> -->
       </div>
       <el-tooltip effect="dark" content="新增一個伺服器" placement="left-start">
         <button @click="AddServerDialogVisible = true">
           <div
-            class="hover:bg-#2b3375 flex size-12 items-center justify-center rounded-full bg-[rgba(128,128,128,0.5)]"
+        class="hover:bg-#2b3375 flex size-12 items-center justify-center rounded-full bg-[rgba(128,128,128,0.5)]"
           >
-            <span class="color-white">
-              <i class="bi bi-plus"></i>
-            </span>
+        <span class="font-size-6 color-white">
+          <i class="bi bi-plus-lg"></i>
+        </span>
           </div>
         </button>
-      </el-tooltip>
-      <el-tooltip effect="dark" content="探索伺服器" placement="left-start">
+            </el-tooltip>
+            <el-tooltip effect="dark" content="探索伺服器" placement="left-start">
         <button @click="ExploreServersDialogVisible = true">
           <div
-            class="hover:bg-#2b3375 flex size-12 items-center justify-center rounded-full bg-[rgba(128,128,128,0.5)]"
+        class="hover:bg-#2b3375 flex size-12 items-center justify-center rounded-full bg-[rgba(128,128,128,0.5)]"
           >
-            <span class="color-white">
-              <i class="bi bi-compass"></i>
-            </span>
+        <span class="font-size-6 color-white">
+          <i class="bi bi-compass-fill"></i>
+        </span>
           </div>
         </button>
       </el-tooltip>

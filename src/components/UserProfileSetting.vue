@@ -7,7 +7,7 @@
           @click="resetForm"
           :disabled="!hasChanges"
           class="px-4 py-2 rounded text-sm"
-          :class="hasChanges ? 'bg-gray-6 text hover:bg-gray-5' : 'bg-gray-7 text-gray-5 cursor-not-allowed'"
+          :class="hasChanges ? 'bg-gray-6 text hover:bg-gray-5' : 'bg-gray-7 text-white cursor-not-allowed'"
         >
           重置
         </button>
@@ -15,7 +15,7 @@
           @click="saveProfile"
           :disabled="!hasChanges || isSaving"
           class="px-4 py-2 rounded text-sm"
-          :class="hasChanges && !isSaving ? 'bg-#513a9a hover:bg-#5f4d9c text' : 'bg-gray-7 text-gray-5 cursor-not-allowed'"
+          :class="hasChanges && !isSaving ? 'bg-#513a9a hover:bg-#5f4d9c text' : 'bg-gray-7 text-white cursor-not-allowed'"
         >
           {{ isSaving ? '儲存中...' : '儲存變更' }}
         </button>
@@ -27,7 +27,7 @@
       <div class="flex-1 space-y-6">
         <!-- 顯示名稱 -->
         <div class="border-b-1 border-gray-5 pb-6">
-          <label class="font-size-3 text-gray-4 mb-2 block">顯示名稱</label>
+          <label class="font-size-3 text-white mb-2 block">顯示名稱</label>
           <input 
             v-model="formData.nickname"
             class="bg-gray-8 text w-full rounded p-3 border border-transparent focus:border-#513a9a focus:outline-none"
@@ -37,13 +37,13 @@
           />
           <div class="mt-1 flex justify-between">
             <span v-if="errors.nickname" class="text-red-400 text-sm">{{ errors.nickname }}</span>
-            <span class="text-gray-5 text-sm ml-auto">{{ formData.nickname.length }}/32</span>
+            <span class="text-white text-sm ml-auto">{{ formData.nickname.length }}/32</span>
           </div>
         </div>
 
         <!-- 使用者名稱 -->
         <div class="border-b-1 border-gray-5 pb-6">
-          <label class="font-size-3 text-gray-4 mb-2 block">使用者名稱</label>
+          <label class="font-size-3 text-white mb-2 block">使用者名稱</label>
           <input 
             v-model="formData.username"
             class="bg-gray-8 text w-full rounded p-3 border border-transparent focus:border-#513a9a focus:outline-none"
@@ -53,13 +53,13 @@
           />
           <div class="mt-1 flex justify-between">
             <span v-if="errors.username" class="text-red-400 text-sm">{{ errors.username }}</span>
-            <span class="text-gray-5 text-sm ml-auto">{{ formData.username.length }}/20</span>
+            <span class="text-white text-sm ml-auto">{{ formData.username.length }}/20</span>
           </div>
         </div>
 
         <!-- 個人狀態 -->
         <div class="border-b-1 border-gray-5 pb-6">
-          <label class="font-size-3 text-gray-4 mb-2 block">個人狀態</label>
+          <label class="font-size-3 text-white mb-2 block">個人狀態</label>
           <textarea 
             v-model="formData.status"
             class="bg-gray-8 text w-full rounded p-3 border border-transparent focus:border-#513a9a focus:outline-none resize-none"
@@ -69,13 +69,13 @@
           ></textarea>
           <div class="mt-1 flex justify-between">
             <span v-if="errors.status" class="text-red-400 text-sm">{{ errors.status }}</span>
-            <span class="text-gray-5 text-sm ml-auto">{{ formData.status.length }}/190</span>
+            <span class="text-white text-sm ml-auto">{{ formData.status.length }}/190</span>
           </div>
         </div>
 
         <!-- 頭像設定 -->
         <div class="border-b-1 border-gray-5 pb-6">
-          <label class="font-size-3 text-gray-4 mb-2 block">頭像</label>
+          <label class="font-size-3 text-white mb-2 block">頭像</label>
           <div class="flex items-center space-x-3">
             <input 
               ref="avatarInput"
@@ -87,24 +87,24 @@
             <button 
               @click="avatarInput?.click()"
               :disabled="isUploadingAvatar"
-              class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-2 disabled:bg-gray-7 disabled:text-gray-5"
+              class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-2 disabled:bg-gray-7 disabled:text-white"
             >
               {{ isUploadingAvatar ? '上傳中...' : '變更頭像' }}
             </button>
             <button 
               @click="removeAvatar"
-              :disabled="!formData.pic_url || isUploadingAvatar"
-              class="text hover:underline disabled:text-gray-5 disabled:no-underline px-4 py-2"
+              :disabled="!formData.picture_url || isUploadingAvatar"
+              class="text hover:underline disabled:text-white disabled:no-underline px-4 py-2"
             >
               移除頭像
             </button>
           </div>
-          <p class="text-gray-5 text-sm mt-2">建議尺寸：128x128 像素，檔案大小不超過 8MB</p>
+          <p class="text-white text-sm mt-2">建議尺寸：128x128 像素，檔案大小不超過 8MB</p>
         </div>
 
         <!-- 橫幅設定 -->
         <div class="pb-6">
-          <label class="font-size-3 text-gray-4 mb-2 block">個人橫幅</label>
+          <label class="font-size-3 text-white mb-2 block">個人橫幅</label>
           <div class="flex items-center space-x-3 mb-2">
             <input 
               ref="bannerInput"
@@ -116,25 +116,25 @@
             <button 
               @click="bannerInput?.click()"
               :disabled="isUploadingBanner"
-              class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-2 disabled:bg-gray-7 disabled:text-gray-5"
+              class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-2 disabled:bg-gray-7 disabled:text-white"
             >
               {{ isUploadingBanner ? '上傳中...' : '變更橫幅' }}
             </button>
             <button 
               @click="removeBanner"
               :disabled="!formData.banner_url || isUploadingBanner"
-              class="text hover:underline disabled:text-gray-5 disabled:no-underline px-4 py-2"
+              class="text hover:underline disabled:text-white disabled:no-underline px-4 py-2"
             >
               移除橫幅
             </button>
           </div>
-          <p class="text-gray-5 text-sm">建議尺寸：600x240 像素，檔案大小不超過 8MB</p>
+          <p class="text-white text-sm">建議尺寸：600x240 像素，檔案大小不超過 8MB</p>
         </div>
       </div>
 
       <!-- 右側預覽 -->
       <div class="w-1/3">
-        <label class="font-size-3 text-gray-4 mb-2 block">預覽</label>
+        <label class="font-size-3 text-white mb-2 block">預覽</label>
         <div class="bg-#01013b h-auto rounded-lg border-2 border-gray-6 overflow-hidden">
           <!-- 橫幅區域 -->
           <div class="relative">
@@ -164,11 +164,11 @@
               <span class="text mr-2 text-xl font-bold">
                 {{ formData.nickname || formData.username || '使用者' }}
               </span>
-              <span class="text-gray-4 text-sm">
+              <span class="text-white text-sm">
                 {{ formData.username || 'username' }}
               </span>
             </div>
-            <p v-if="formData.status" class="text-gray-3 mt-2 text-sm">
+            <p v-if="formData.status" class="text-white mt-2 text-sm">
               {{ formData.status }}
             </p>
           </div>
@@ -209,7 +209,7 @@ const formData = ref({
   username: '',
   nickname: '',
   status: '',
-  pic_url: '',
+  picture_url: '',
   banner_url: ''
 })
 
@@ -218,7 +218,7 @@ const originalData = ref({
   username: '',
   nickname: '',
   status: '',
-  pic_url: '',
+  picture_url: '',
   banner_url: ''
 })
 
@@ -292,15 +292,15 @@ const loadUserProfile = async () => {
         username: userData.username || '',
         nickname: userData.nickname || '',
         status: userData.status || '',
-        pic_url: userData.pic_url || '',
-        banner_url: (userData as any).banner_url || ''
+        picture_url: userData.picture_url || '',
+        banner_url: userData.banner_url || ''
       }
 
       // 保存原始數據
       originalData.value = { ...formData.value }
       
       // 設置預覽圖片
-      previewAvatarUrl.value = formData.value.pic_url
+      previewAvatarUrl.value = formData.value.picture_url
       previewBannerUrl.value = formData.value.banner_url
     }
   } catch (error) {
@@ -336,7 +336,8 @@ const saveProfile = async () => {
           username: formData.value.username,
           nickname: formData.value.nickname,
           status: formData.value.status,
-          pic_url: formData.value.pic_url
+          picture_url: formData.value.picture_url,
+          banner_url: formData.value.banner_url
         } as User)
       }
 
@@ -362,7 +363,7 @@ const saveProfile = async () => {
 // 重置表單
 const resetForm = () => {
   formData.value = { ...originalData.value }
-  previewAvatarUrl.value = formData.value.pic_url
+  previewAvatarUrl.value = formData.value.picture_url
   previewBannerUrl.value = formData.value.banner_url
   errors.value = {
     username: '',
@@ -377,14 +378,14 @@ const uploadImage = async (file: File, type: 'avatar' | 'banner'): Promise<strin
   formData.append('image', file)
   formData.append('type', type)
 
-  const { data: response }: { data: APIResponse<{ url: string }> } = await api.post('/user/upload-image', formData, {
+  const { data: response }: { data: APIResponse<{ image_url: string }> } = await api.post('/user/upload-image', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
   })
 
   if (response.status === 'success' && response.data) {
-    return response.data.url
+    return response.data.image_url
   } else {
     throw new Error(response.message)
   }
@@ -421,14 +422,22 @@ const handleAvatarChange = async (event: Event) => {
 
     // 上傳到伺服器
     const imageUrl = await uploadImage(file, 'avatar')
-    formData.value.pic_url = imageUrl
+    formData.value.picture_url = imageUrl
     previewAvatarUrl.value = imageUrl
+
+    // 更新 store 中的用戶資料
+    if (userStore.userData) {
+      userStore.setUserData({
+        ...userStore.userData,
+        picture_url: imageUrl
+      })
+    }
 
     ElMessage.success('頭像已更新')
   } catch (error: any) {
     console.error('上傳頭像失敗:', error)
     // 恢復原始預覽
-    previewAvatarUrl.value = formData.value.pic_url
+    previewAvatarUrl.value = formData.value.picture_url
     
     if (error.response?.data?.displayable) {
       ElMessage.error(error.response.data.message)
@@ -476,7 +485,13 @@ const handleBannerChange = async (event: Event) => {
     formData.value.banner_url = imageUrl
     previewBannerUrl.value = imageUrl
 
-    ElMessage.success('橫幅已更新')
+      // 更新 store 中的用戶資料
+      if (userStore.userData) {
+        userStore.setUserData({
+          ...userStore.userData,
+          banner_url: imageUrl
+        })
+      }    ElMessage.success('橫幅已更新')
   } catch (error: any) {
     console.error('上傳橫幅失敗:', error)
     // 恢復原始預覽
@@ -502,8 +517,17 @@ const removeAvatar = async () => {
     const { data: response }: { data: APIResponse } = await api.delete('/user/avatar')
     
     if (response.status === 'success') {
-      formData.value.pic_url = ''
+      formData.value.picture_url = ''
       previewAvatarUrl.value = ''
+      
+      // 更新 store 中的用戶資料
+      if (userStore.userData) {
+        userStore.setUserData({
+          ...userStore.userData,
+          picture_url: ''
+        })
+      }
+      
       ElMessage.success('頭像已移除')
     } else {
       throw new Error(response.message)
@@ -530,6 +554,15 @@ const removeBanner = async () => {
     if (response.status === 'success') {
       formData.value.banner_url = ''
       previewBannerUrl.value = ''
+      
+      // 更新 store 中的用戶資料
+      if (userStore.userData) {
+        userStore.setUserData({
+          ...userStore.userData,
+          banner_url: ''
+        })
+      }
+      
       ElMessage.success('橫幅已移除')
     } else {
       throw new Error(response.message)

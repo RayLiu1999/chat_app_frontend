@@ -4,10 +4,10 @@ export interface User {
   nickname: string
   email?: string
   phone?: string
-  pic_url: string
   status: string
   is_online: boolean
-  banner_url?: string
+  picture_url: string
+  banner_url: string
   created_at?: number
   updated_at?: number
 }

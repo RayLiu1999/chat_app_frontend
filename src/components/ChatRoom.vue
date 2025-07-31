@@ -133,6 +133,7 @@ const loadingMore = ref(false)
 
 // Computed
 const messages = computed(() => chatStore.messages)
+const userData = computed(() => userStore.userData)
 
 const dmRoom = computed(() => {
   if (props.roomType === 'dm') {
@@ -180,10 +181,10 @@ const sendMessage = (event: KeyboardEvent) => {
 }
 
 const getMessageProfile = (message: Message): { nickname: string; picture_url: string } => {
-  if (message.sender_id === userStore.userData?.id) {
+  if (message.sender_id === userData.value?.id) {
     return {
-      nickname: userStore.userData?.nickname || '',
-      picture_url: userStore.userData?.pic_url || '',
+      nickname: userData.value?.nickname || '',
+      picture_url: userData.value?.picture_url || '',
     }
   }
 
@@ -200,7 +201,7 @@ const getMessageProfile = (message: Message): { nickname: string; picture_url: s
     if (member) {
       return {
         nickname: member.nickname || member.username,
-        picture_url: member.picture || '/default-avatar.png',
+        picture_url: member.picture_url,
       }
     }
   }

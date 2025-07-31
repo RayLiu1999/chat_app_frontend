@@ -55,7 +55,7 @@
             @click="goToChat(friend)"
           >
             <div class="flex items-center space-x-4">
-              <AvatarImage :src="friend.pic_url" alt="User" size="md" :status="friend.is_online ? 'online' : 'offline'" />
+              <AvatarImage :src="friend.picture_url" alt="User" size="md" :status="friend.is_online ? 'online' : 'offline'" />
               <div>
                 <div class="text">{{ friend.nickname }}</div>
                 <div class="weak-text text-sm">{{ friend.is_online ? '線上' : '離線' }}</div>
@@ -107,6 +107,16 @@
         <li @click="" class="danger">移除好友</li>
       </template>
     </PositionMenu>
+    
+    <!-- 確認對話框 -->
+    <ConfirmDialog
+      v-model:visible="showConfirmDialog"
+      :title="confirmData.title"
+      :message="confirmData.message"
+      :type="confirmData.type"
+      :confirm-text="confirmData.confirmText"
+      @confirm="confirmData.onConfirm"
+    />
   </div>
 </template>
 
@@ -115,7 +125,8 @@
   import { useFriendStore } from '@/stores/friend'
   import { useChatStore } from '@/stores/chat'
   import type { User } from '@/types/auth'
-  import { ElMessageBox, ElMessage } from 'element-plus';
+  import { ElMessage } from 'element-plus';
+  import ConfirmDialog from './dialogs/ConfirmDialog.vue';
   import { useRouter } from 'vue-router'
   import PositionMenu from './PositionMenu.vue'
   
@@ -133,6 +144,20 @@
 
   const selectedStatus = ref<StatusKey>('online')
   const newFriendUsername = ref('')
+  const showConfirmDialog = ref(false)
+  const confirmData = ref<{
+    title: string
+    message: string
+    type: 'info' | 'warning' | 'error' | 'success'
+    confirmText: string
+    onConfirm: () => void
+  }>({
+    title: '',
+    message: '',
+    type: 'info',
+    confirmText: '確認',
+    onConfirm: () => {}
+  })
   const friendStore = useFriendStore()
   const chatStore = useChatStore()
   const friends = computed(() => friendStore.friends)
@@ -257,22 +282,17 @@ function startVideoCall(friend: User) {
  * 移除好友
  */
 function removeFriend(friend: User) {
-  ElMessageBox.confirm(
-    `確定要移除好友「${friend.nickname}」嗎？`,
-    '移除好友',
-    {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  )
-    .then(() => {
+  confirmData.value = {
+    title: '移除好友',
+    message: `確定要移除好友「${friend.nickname}」嗎？`,
+    type: 'warning',
+    confirmText: '確定',
+    onConfirm: () => {
       // TODO: 呼叫API實際移除好友
       ElMessage.success('已移除好友（待串接API）');
-    })
-    .catch(() => {
-      ElMessage.info('已取消移除');
-    });
+    }
+  }
+  showConfirmDialog.value = true
 }
 
 // ...原有export等內容

@@ -1,0 +1,76 @@
+/* Discord 風格對話框樣式覆蓋 - 完全匹配 Discord */
+
+/* 使用 CSS 層級來確保優先權 */
+@layer overrides {
+  /* 針對我們的自定義對話框 - 主體樣式 */
+  .edit-field-dialog.el-dialog,
+  .confirm-dialog.el-dialog,
+  .el-dialog.edit-field-dialog,
+  .el-dialog.confirm-dialog {
+    background-color: #1d202f !important;
+    border: none !important;
+    border-radius: 12px !important;
+    color: #dcddde !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24) !important;
+  }
+
+  /* 標題區域 */
+  .edit-field-dialog .el-dialog__header,
+  .confirm-dialog .el-dialog__header {
+    background-color: #1d202f !important;
+    border-bottom: none !important;
+    /* padding: 12px 24px 0 24px !important; */
+  }
+
+  /* 內容區域 */
+  .edit-field-dialog .el-dialog__body,
+  .confirm-dialog .el-dialog__body {
+    background-color: #1d202f !important;
+    color: #b9bbbe !important;
+  }
+
+}
+
+/* 輸入框樣式調整 */
+.edit-field-dialog input,
+.edit-field-dialog textarea,
+.confirm-dialog input {
+  background-color: #111420 !important;
+  border: 1px solid #111420 !important;
+  border-radius: 4px !important;
+  color: #dcddde !important;
+  padding: 10px 12px !important;
+  font-size: 16px !important;
+  transition: all 0.15s ease !important;
+}
+
+.edit-field-dialog input:focus,
+.edit-field-dialog textarea:focus,
+.confirm-dialog input:focus {
+  border-color: #5865f2 !important;
+  box-shadow: 0 0 0 1px #5865f2 !important;
+  outline: none !important;
+}
+
+.edit-field-dialog input::placeholder,
+.edit-field-dialog textarea::placeholder,
+.confirm-dialog input::placeholder {
+  color: #72767d !important;
+}
+
+/* 按鈕樣式調整 */
+.edit-field-dialog .el-dialog__footer button,
+.confirm-dialog .el-dialog__footer button {
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 10px 24px !important;
+  border: none !important;
+  transition: all 0.17s ease !important;
+  cursor: pointer !important;
+}
+
+/* 遮罩層樣式 */
+.el-overlay {
+  background-color: rgba(0, 0, 0, 0.78) !important;
+}

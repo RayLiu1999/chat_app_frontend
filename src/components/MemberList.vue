@@ -26,7 +26,7 @@
           >
             <div class="relative mr-3">
               <AvatarImage
-                :src="member.picture || '/default-avatar.png'"
+                :src="member.picture_url"
                 :alt="member.nickname || member.username"
                 size="sm"
               />
@@ -76,7 +76,7 @@
           >
             <div class="relative mr-3">
               <AvatarImage
-                :src="member.picture || '/default-avatar.png'"
+                :src="member.picture_url"
                 :alt="member.nickname || member.username"
                 size="sm"
               />

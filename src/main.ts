@@ -9,8 +9,12 @@ import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
+
 // bootstrap icon
 import 'bootstrap-icons/font/bootstrap-icons.css'
+
+// 覆寫 Element Plus 樣式
+import './assets/cover.css'
 
 const app = createApp(App)
 const pinia = createPinia()
