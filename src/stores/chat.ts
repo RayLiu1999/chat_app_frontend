@@ -6,6 +6,7 @@ import type { MessageAPI, DMRoomAPI } from '@/types/api'
 import api from '@/api/axios'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import type { ClientToServer, ServerToClient } from '@/types/ws'
 
 export const useChatStore = defineStore('chat', () => {
   const router = useRouter()
@@ -77,13 +78,8 @@ export const useChatStore = defineStore('chat', () => {
               return
             }
 
-            // 處理心跳回應
-            if (event.data === 'pong') {
-              return
-            }
-
             // 嘗試解析 JSON
-            let wsMessage: MessageAPI.WsResponseMessage
+            let wsMessage: ServerToClient.Message
             try {
               wsMessage = JSON.parse(event.data)
             } catch (parseError) {
@@ -93,18 +89,46 @@ export const useChatStore = defineStore('chat', () => {
 
             console.log('接收 ws:', wsMessage)
 
-            if (wsMessage.action === 'send_message') {
-              messages.value.push(wsMessage.data)
-            } else if (wsMessage.action === 'join_room') {
-              if (wsMessage.data.status === 'error') {
-                ElMessage.error('加入房間失敗')
-                // 跳回好友列表
-                router.push('/channels/@me')
-              }
-            } else if (wsMessage.action === 'pong') {
-              // 收到 ping 回應，無需處理
-            } else {
-              console.warn('未知的 WebSocket 訊息:', wsMessage)
+            // 分發事件
+            const customEvent = new CustomEvent(wsMessage.action, { detail: wsMessage.data })
+            window.dispatchEvent(customEvent)
+
+            // 處理核心訊息
+            switch (wsMessage.action) {
+              case 'pong':
+                // 心跳回應，不需要特殊處理
+                break
+              case 'new_message':
+                messages.value.push(wsMessage.data)
+                break
+              case 'room_joined':
+                // ElMessage.success(wsMessage.data.message)
+                break
+              case 'room_left':
+                // ElMessage.info(wsMessage.data.message)
+                break
+              case 'message_sent':
+                // ElMessage.success('訊息發送成功')
+                messages.value.push(wsMessage.data)
+                break
+              case 'error':
+                ElMessage.error(`WebSocket 錯誤: ${wsMessage.data.message}`)
+                if (wsMessage.data.original_action === 'join_room') {
+                  router.push('/channels/@me')
+                }
+                break
+              case 'user_status':
+                // 用戶狀態更新，由其他 store 處理
+                break
+              case 'voice_call_notification':
+                // 語音通話通知，由語音通話 store 處理
+                break
+              case 'webrtc_signaling':
+                // WebRTC 信令，由語音通話 store 處理
+                break
+              default:
+                // 其他事件由各自的 store 監聽處理
+                break
             }
           } catch (error) {
             console.error('處理 WebSocket 訊息時發生錯誤:', error)
@@ -141,7 +165,7 @@ export const useChatStore = defineStore('chat', () => {
     stopHeartbeat()
     pingInterval = window.setInterval(() => {
       if (socket && socket.readyState === WebSocket.OPEN) {
-        const request = { action: 'ping' }
+        const request: ClientToServer.Ping = { action: 'ping' }
         socket.send(JSON.stringify(request))
       }
     }, wsOptions.heartbeatInterval)
@@ -194,16 +218,16 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   // 發送訊息
-  const sendMessage = (message: MessageAPI.Request.SendMessage) => {
+  const sendMessage = (payload: ClientToServer.Payload.SendMessage) => {
     if (!checkWsConnection()) {
       console.error('WebSocket 未連接，無法發送訊息')
       return false
     }
 
     try {
-      const request: MessageAPI.WsRequestMessage = {
+      const request: ClientToServer.SendMessage = {
         action: 'send_message',
-        data: message,
+        data: payload,
       }
 
       const messageString = JSON.stringify(request)
@@ -224,16 +248,16 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   // 加入房間(Server Channel or Private Chat)
-  const joinRoom = async (data: MessageAPI.Request.JoinRoom) => {
+  const joinRoom = async (payload: ClientToServer.Payload.JoinRoom) => {
     if (!checkWsConnection()) {
       console.error('WebSocket 未連接，無法加入房間')
       return false
     }
 
     try {
-      const request: MessageAPI.WsRequestMessage = {
+      const request: ClientToServer.JoinRoom = {
         action: 'join_room',
-        data: data,
+        data: payload,
       }
 
       socket!.send(JSON.stringify(request))
@@ -367,6 +391,7 @@ export const useChatStore = defineStore('chat', () => {
    */
 
   return {
+    socket,
     wsConnect,
     disWsConnect,
     checkWsConnection,
