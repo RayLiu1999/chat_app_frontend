@@ -2,9 +2,9 @@
   <div class="channel-menu p-2">
     <!-- 文字頻道區塊 -->
     <div class="channel-category mb-4">
-      <div class="category-header flex items-center justify-between px-2 py-1 hover:bg-#14175a rounded">
+      <div class="category-header flex items-center justify-between px-2 py-1 rounded">
         <button 
-          class="flex items-center text-xs font-semibold text-gray-400 hover:text-gray-300 transition-colors"
+          class="flex items-center text font-semibold text-gray-400 hover:text-gray-300 transition-colors"
           @click="toggleTextChannels"
         >
           <i 
@@ -14,11 +14,11 @@
           文字頻道
         </button>
         <button 
-          class="text-gray-400 hover:text -white p-1 rounded transition-colors"
+          class="text-gray-400 hover:text-white p-1 rounded transition-colors"
           @click="openCreateChannelDialog('text')"
           title="建立頻道"
         >
-          <i class="bi bi-plus text-sm"></i>
+          <i class="bi bi-plus text-lg"></i>
         </button>
       </div>
       
@@ -39,9 +39,9 @@
 
     <!-- 語音頻道區塊 -->
     <div class="channel-category">
-      <div class="category-header flex items-center justify-between px-2 py-1 hover:bg-#14175a rounded">
+      <div class="category-header flex items-center justify-between px-2 py-1 rounded">
         <button 
-          class="flex items-center text-xs font-semibold text-gray-400 hover:text-gray-300 transition-colors"
+          class="flex items-center text font-semibold text-gray-400 hover:text-gray-300 transition-colors"
           @click="toggleVoiceChannels"
         >
           <i 
@@ -55,7 +55,7 @@
           @click="openCreateChannelDialog('voice')"
           title="建立語音頻道"
         >
-          <i class="bi bi-plus text-sm"></i>
+          <i class="bi bi-plus text-lg"></i>
         </button>
       </div>
       
@@ -110,17 +110,14 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useChannelStore } from '@/stores/channel'
-import { useChatStore } from '@/stores/chat'
 import type { Channel } from '@/types/chat'
 import type { ChannelAPI } from '@/types/api'
 import PositionMenu from './PositionMenu.vue'
-import AddChannelDialog from './dialogs/AddChannelDialog.vue'
-import ConfirmDialog from './dialogs/ConfirmDialog.vue'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
 const channelStore = useChannelStore()
-const chatStore = useChatStore()
 
 // 響應式狀態
 const showTextChannels = ref(true)
@@ -132,7 +129,7 @@ const showConfirmDialog = ref(false)
 const confirmData = ref<{
   title: string
   message: string
-  type: 'info' | 'warning' | 'error' | 'success'
+  type: 'info' | 'warning' | 'danger' | 'success'
   confirmText: string
   onConfirm: () => void
 }>({
@@ -168,6 +165,11 @@ const toggleVoiceChannels = () => {
 
 // 選擇頻道
 const selectChannel = (channel: Channel) => {
+  if (channel.type === 'voice') {
+    ElMessage.info('敬請期待此功能！')
+    return
+  }
+
   channelStore.setCurrentChannel(channel)
   router.push(`/channels/${channel.server_id}/${channel.id}`)
 }
@@ -187,11 +189,15 @@ const handleAddChannelDialog = (value: boolean) => {
 const handleCreateChannel = async (channelData: ChannelAPI.Request.Create) => {
   if (!currentServerId.value) return
   
-  const newChannel = await channelStore.createChannel(currentServerId.value, channelData)
-  if (newChannel) {
-    addChannelDialogVisible.value = false
-    // 自動跳轉到新建的頻道
-    selectChannel(newChannel)
+  try {
+    const newChannel = await channelStore.fetchCreateChannel(currentServerId.value, channelData)
+    if (newChannel) {
+      addChannelDialogVisible.value = false
+      // 自動跳轉到新建的頻道
+      selectChannel(newChannel)
+    }
+  } catch (error) {
+    console.error('建立頻道失敗:', error)
   }
 }
 
@@ -209,9 +215,8 @@ const handleChannelRightClick = (event: MouseEvent, channel: Channel) => {
 // 編輯頻道
 const editChannel = () => {
   if (!selectedChannel.value) return
-  
-  // TODO: 開啟編輯頻道對話框
-  console.log('編輯頻道:', selectedChannel.value.name)
+
+  ElMessage.info('敬請期待此功能！')
   menuRef.value?.hideMenu()
 }
 
@@ -222,17 +227,15 @@ const deleteChannel = () => {
   confirmData.value = {
     title: '刪除頻道',
     message: `確定要刪除頻道「${selectedChannel.value.name}」嗎？此動作無法復原。`,
-    type: 'warning',
+    type: 'danger',
     confirmText: '刪除',
     onConfirm: async () => {
       if (!selectedChannel.value) return
       
-      const success = await channelStore.deleteChannel(selectedChannel.value.id)
-      if (success) {
-        // 如果刪除的是當前頻道，跳轉到伺服器首頁
-        if (isCurrentChannel(selectedChannel.value.id)) {
-          router.push(`/channels/${currentServerId.value}`)
-        }
+      await channelStore.fetchDeleteChannel(selectedChannel.value.id)
+      // 如果刪除的是當前頻道，跳轉到伺服器首頁
+      if (isCurrentChannel(selectedChannel.value.id)) {
+        router.push(`/channels/${currentServerId.value}`)
       }
     }
   }
@@ -243,7 +246,11 @@ const deleteChannel = () => {
 // 載入頻道列表
 const loadChannels = async () => {
   if (currentServerId.value) {
-    await channelStore.fetchServerChannels(currentServerId.value)
+    try {
+      await channelStore.fetchServerChannels(currentServerId.value)
+    } catch (error) {
+      console.error('載入頻道列表失敗:', error)
+    }
   }
 }
 
@@ -259,11 +266,6 @@ watch(
   },
   { immediate: true }
 )
-
-// 元件掛載時載入頻道
-// onMounted(() => {
-//   loadChannels()
-// })
 </script>
 
 <style lang="scss" scoped>

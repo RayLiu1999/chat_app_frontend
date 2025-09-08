@@ -136,7 +136,7 @@ const userData = computed(() => userStore.userData)
 
 const dmRoom = computed(() => {
   if (props.roomType === 'dm') {
-    return chatStore.dm_rooms.find((room) => room.room_id === props.roomId)
+    return chatStore.dmRooms.find((room) => room.room_id === props.roomId)
   }
   return null
 })
@@ -211,6 +211,7 @@ const getMessageProfile = (message: Message): { nickname: string; picture_url: s
   }
 }
 
+// 檢查是否為區塊的第一條訊息
 const isFirstOfBlock = (idx: number, message: Message): boolean => {
   if (idx === 0) return true
   const prev = messages.value[idx - 1]
@@ -230,6 +231,7 @@ const isFirstOfBlock = (idx: number, message: Message): boolean => {
   }
 }
 
+// 檢查是否為新日期 (僅 DM 顯示)
 const isNewDate = (idx: number, message: Message): boolean => {
   if (idx === 0) return true
   const prev = messages.value[idx - 1]
@@ -238,6 +240,7 @@ const isNewDate = (idx: number, message: Message): boolean => {
   return ymd(prev.timestamp) !== ymd(message.timestamp)
 }
 
+// 滾動相關
 const scrollToBottom = async () => {
   if (!scrollbarRef.value) {
     console.warn('ChatRoom: scrollbarRef is null, skipping scroll')
@@ -246,17 +249,20 @@ const scrollToBottom = async () => {
   scrollbarRef.value.scrollTop = scrollbarRef.value.scrollHeight
 }
 
+// 確保在 DOM 更新後滾動到底部
 const delayedScrollToBottom = async () => {
   await nextTick()
   await scrollToBottom()
 }
 
+// 檢查使用者是否接近底部
 const isUserNearBottom = (): boolean => {
   if (!scrollbarRef.value) return true
   const threshold = 20
   return scrollbarRef.value.scrollTop + scrollbarRef.value.clientHeight >= scrollbarRef.value.scrollHeight - threshold
 }
 
+// 載入更多訊息 (僅 DM 支援)
 const loadMore = async () => {
   if (props.roomType !== 'dm') return // 目前只支援 DM 的載入更多
   
@@ -268,26 +274,31 @@ const loadMore = async () => {
     return
   }
   
-  loadingMore.value = true
-  const prevHeight = scrollbarRef.value.scrollHeight
-  const topMsgId = messages.value[0].id
-  
-  await chatStore.fetchDMMessages({
-    room_id: props.roomId,
-    message_id: topMsgId,
-    limit: 50,
-  })
-  
-  await nextTick(() => {
-    if (scrollbarRef.value) {
-      const newHeight = scrollbarRef.value.scrollHeight
-      scrollbarRef.value.scrollTop = newHeight - prevHeight
-    }
-  })
-  
-  loadingMore.value = false
+  try {
+    loadingMore.value = true
+    const prevHeight = scrollbarRef.value.scrollHeight
+    const topMsgId = messages.value[0].id
+    
+    await chatStore.fetchDMMessages({
+      room_id: props.roomId,
+      message_id: topMsgId,
+      limit: 50,
+    })
+    
+    await nextTick(() => {
+      if (scrollbarRef.value) {
+        const newHeight = scrollbarRef.value.scrollHeight
+        scrollbarRef.value.scrollTop = newHeight - prevHeight
+      }
+    })
+  } catch (error) {
+    console.error('載入更多訊息失敗:', error)
+  } finally {
+    loadingMore.value = false
+  }
 }
 
+// 初始化房間
 const initializeRoom = async () => {
   // 檢查 roomId 是否有效
   if (!props.roomId) {
@@ -330,7 +341,7 @@ const initializeRoom = async () => {
 
     await delayedScrollToBottom()
   } catch (error) {
-    console.error('ChatRoom: Failed to initialize room:', error)
+    console.error(error)
   }
 }
 

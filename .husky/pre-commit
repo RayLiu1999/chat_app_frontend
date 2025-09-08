@@ -1,0 +1,72 @@
+#!/bin/sh
+
+echo "🔍 Running Gemini AI code review..."
+
+# 建立 code_reviews 資料夾（如果不存在）
+mkdir -p code_reviews
+
+# 產生時間戳記檔名
+timestamp=$(date "+%Y%m%d_%H%M%S")
+review_file="code_reviews/review_${timestamp}.md"
+
+# 收集所有暫存的 TypeScript、Vue 和 JavaScript 檔案
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|vue|js|tsx|jsx)$')
+
+if [ -z "$staged_files" ]; then
+    echo "ℹ️ No code files to review"
+    exit 0
+fi
+
+echo "📋 Files to review:"
+echo "$staged_files"
+
+# 簡化的審查提示
+review_prompt="請用繁體中文簡短審查以下 Vue.js 專案的代碼變更，重點關注：
+1. 重要的 bug 或邏輯錯誤
+2. TypeScript 類型安全問題
+3. 明顯的性能或安全問題
+
+變更檔案：
+$staged_files
+
+請給出 1-3 個最重要的建議即可。"
+
+echo "🤖 Analyzing with Gemini AI..."
+
+# 使用 Gemini CLI
+review_result=$(echo "$review_prompt" | gemini 2>&1)
+exit_code=$?
+
+if [ $exit_code -ne 0 ]; then
+    echo "❌ Gemini review failed. Continue anyway? (y/N)"
+    read -r response
+    if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
+        exit 1
+    fi
+else
+    # 保存 review 結果到檔案
+    {
+        echo "# Code Review Report"
+        echo "**時間**: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "**分支**: $(git branch --show-current)"
+        echo ""
+        echo "## 變更檔案"
+        echo "\`\`\`"
+        echo "$staged_files"
+        echo "\`\`\`"
+        echo ""
+        echo "## AI 審查結果"
+        echo "$review_result"
+        echo ""
+        echo "---"
+        echo "*此報告由 Gemini AI 自動生成*"
+    } > "$review_file"
+    
+    echo "✅ Review Result:"
+    echo "$review_result" | head -20  # 限制輸出行數
+    echo ""
+    echo "📝 Review saved to: $review_file"
+    echo ""
+fi
+
+echo "✅ Commit approved"

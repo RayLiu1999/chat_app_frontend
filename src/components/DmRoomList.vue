@@ -6,7 +6,7 @@
           class="bg-#14175a text w-full rounded p-2"
           placeholder="搜尋或開始一個對話"
           type="text"
-          @click="console.log(123)"
+          @click="ElMessage.info('敬請期待此功能！')"
           @contextmenu.stop
         />
       </div>
@@ -20,25 +20,25 @@
       </RouterLink>
       <div class="mt-4">
         <p class="text-3 weak-text mb-2">私人訊息</p>
-        <div v-for="dm_room in dm_rooms" :key="dm_room.room_id">
-          <RouterLink :to="`/channels/@me/${dm_room.room_id}`">
+        <div v-for="dmRoom in dmRooms" :key="dmRoom.room_id">
+          <RouterLink :to="`/channels/@me/${dmRoom.room_id}`">
             <div 
               class="mb-2 flex cursor-pointer items-center p-1"
               :class="{
-                'button-hover': !isCurrentDMRoom(dm_room.room_id),
-                'active-chat': isCurrentDMRoom(dm_room.room_id)
+                'button-hover': !isCurrentDMRoom(dmRoom.room_id),
+                'active-chat': isCurrentDMRoom(dmRoom.room_id)
               }"
             >
               <div class="mr-2">
                 <AvatarImage
-                  :src="dm_room.picture_url"
+                  :src="dmRoom.picture_url"
                   alt="User"
                   size="xs"
                 />
               </div>
-              <span class="weak-text"> {{ dm_room.nickname }} </span>
+              <span class="weak-text"> {{ dmRoom.nickname }} </span>
               <span class="ml-auto hover:text-white cursor-pointer">
-                <i class="bi bi-x" @click="handleHideDMRoom(dm_room.room_id)"></i>
+                <i class="bi bi-x" @click="handleHideDMRoom(dmRoom.room_id)"></i>
               </span>
             </div>
           </RouterLink>
@@ -53,23 +53,31 @@
   import { computed, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import { useChatStore } from '@/stores/chat'
+  import { ElMessage } from 'element-plus'
+  import { useFetchData } from '@/composables/useFetchData'
 
   const route = useRoute()
   const chatStore = useChatStore()
-  const dm_rooms = computed(() => chatStore.dm_rooms)
+  const dmRooms = computed(() => chatStore.dmRooms)
+  const { isLoading, fetchData } = useFetchData(chatStore.fetchDMRoomList)
 
   // 判斷是否為當前聊天室
-  const isCurrentDMRoom = (dm_room_id: string): boolean => {
+  const isCurrentDMRoom = (dmRoomId: string): boolean => {
     // 檢查當前路由是否匹配特定的聊天室
-    return route.path === `/channels/@me/${dm_room_id}`
+    return route.path === `/channels/@me/${dmRoomId}`
   }
 
   onMounted(async () => {
-    await chatStore.fetchDMRoomList()
+    fetchData()
   })
 
-  const handleHideDMRoom = (dm_room_id: string) => {
-    chatStore.fetchHideDMRoom(dm_room_id)
+  // 隱藏DM聊天室
+  const handleHideDMRoom = async (dmRoomId: string) => {
+    try {
+      await chatStore.fetchHideDMRoom(dmRoomId)
+    } catch (error) {
+      console.error(error);
+    }
   }
 </script>
 

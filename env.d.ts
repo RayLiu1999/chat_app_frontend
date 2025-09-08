@@ -2,11 +2,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_APP_DOMAIN: string;
-
-  // API
   readonly VITE_API_DOMAIN: string;
-
-  readonly VITE_ONLINE: boolean;
+  readonly VITE_ONLINE: string;
 }
 
 interface ImportMeta {

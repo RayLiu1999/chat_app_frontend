@@ -305,7 +305,6 @@ const loadUserProfile = async () => {
     }
   } catch (error) {
     console.error('載入用戶資料失敗:', error)
-    ElMessage.error('載入用戶資料失敗')
   } finally {
     isLoading.value = false
   }

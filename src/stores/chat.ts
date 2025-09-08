@@ -2,11 +2,12 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 import type { Message, DMRoom } from '@/types/chat'
-import type { MessageAPI, DMRoomAPI } from '@/types/api'
+import type { MessageAPI, DMRoomAPI, APIResponse } from '@/types/api'
 import api from '@/api/axios'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import type { ClientToServer, ServerToClient } from '@/types/ws'
+import { handleAPIResponse, handleDeleteResponse } from '@/api/utils'
 
 export const useChatStore = defineStore('chat', () => {
   const router = useRouter()
@@ -14,7 +15,7 @@ export const useChatStore = defineStore('chat', () => {
   // 資料
   const channels = ref(['general', 'random', 'help'])
   const messages = ref<Message[]>([])
-  const dm_rooms = ref<DMRoom[]>([])
+  const dmRooms = ref<DMRoom[]>([])
 
   // 當前狀態
   const currentChannel = ref('general')
@@ -33,7 +34,7 @@ export const useChatStore = defineStore('chat', () => {
   let isConnecting: boolean = false // 連線狀態
   let shouldReconnect: boolean = true // 是否應該重連
   let API_URL = ''
-  if (import.meta.env.ONLINE) {
+  if (import.meta.env.VITE_ONLINE === 'true') {
     API_URL = 'wss://' + API_DOMAIN
   } else {
     API_URL = 'ws://' + API_DOMAIN
@@ -304,81 +305,96 @@ export const useChatStore = defineStore('chat', () => {
   setupVisibilityListener()
 
   // 取得DM聊天室列表
-  const fetchDMRoomList = async () => {
-    const { data: response } = await api.get('/dm_rooms')
-    const data = response.data as DMRoom[]
-    dm_rooms.value = data
-
-    return data
+  const fetchDMRoomList = async (): Promise<void> => {
+    try {
+      const { data: response } = await api.get<APIResponse<DMRoom[]>>('/dm_rooms')
+      const rooms = handleAPIResponse(response, '獲取 DM 聊天室列表')
+      dmRooms.value = rooms
+    } catch (error) {
+      throw error
+    }
   }
 
   /**
    * 建立DM聊天室
    * @param dm_room DMRoomAPI.Request.Create
-   * @returns DMRoom
    */
-  const fetchCreateDMRoom = async (dm_room: DMRoomAPI.Request.Create) => {
-    const { data: response } = await api.post('/dm_rooms', dm_room)
-    const data = response.data as DMRoom
+  const fetchCreateDMRoom = async (dm_room: DMRoomAPI.Request.Create): Promise<DMRoom> => {
+    try {
+      const { data: response } = await api.post<APIResponse<DMRoom>>('/dm_rooms', dm_room)
+      const data = handleAPIResponse(response, '建立 DM 聊天室')
 
-    // 如果ID重複，則更新
-    const index = dm_rooms.value.findIndex((c) => c.room_id === data.room_id)
-    if (index !== -1) {
-      dm_rooms.value[index] = data
-    } else {
-      dm_rooms.value.push(data)
+      // 如果ID重複，則更新
+      const index = dmRooms.value.findIndex((c) => c.room_id === data.room_id)
+      if (index !== -1) {
+        dmRooms.value[index] = data
+      } else {
+        dmRooms.value.push(data)
+      }
+      
+      return data
+    } catch (error) {
+      throw error
     }
-
-    return data
   }
 
   // 隱藏DM聊天室
-  const fetchHideDMRoom = async (dm_room_id: string) => {
-    await api.put(`/dm_rooms`, { room_id: dm_room_id, is_hidden: true })
-    dm_rooms.value = dm_rooms.value.filter((c) => c.room_id !== dm_room_id)
-    router.push('/channels/@me')
+  const fetchHideDMRoom = async (dmRoomId: string): Promise<void> => {
+    try {
+      const { data: response } = await api.put<APIResponse<null>>(`/dm_rooms`, { room_id: dmRoomId, is_hidden: true })
+      handleDeleteResponse(response, '隱藏 DM 聊天室')
+      
+      dmRooms.value = dmRooms.value.filter((c) => c.room_id !== dmRoomId)
+      router.push('/channels/@me')
+    } catch (error) {
+      throw error
+    }
   }
 
   // 取得DM聊天室訊息
-  const fetchDMMessages = async (message: MessageAPI.Request.GetMessages) => {
-    const params: { before?: string; limit: number } = { limit: message.limit }
-    if (message.message_id) {
-      params.before = message.message_id
+  const fetchDMMessages = async (message: MessageAPI.Request.GetMessages): Promise<void> => {
+    try {
+      const params: { before?: string; limit: number } = { limit: message.limit }
+      if (message.message_id) {
+        params.before = message.message_id
+      }
+      const { data: response } = await api.get<APIResponse<Message[]>>('/dm_rooms/' + message.room_id + '/messages', { params })
+      const data = handleAPIResponse(response, '獲取 DM 訊息')
+
+      // 依序加入
+      messages.value.push(...data)
+
+      // 去重
+      messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
+
+      // 排序
+      messages.value.sort((a, b) => a.timestamp - b.timestamp)
+    } catch (error) {
+      throw error
     }
-    const { data: response } = await api.get('/dm_rooms/' + message.room_id + '/messages', { params })
-    const data = response.data as Message[]
-
-    // 依序加入
-    messages.value.push(...data)
-
-    // 去重
-    messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
-
-    // 排序
-    messages.value.sort((a, b) => a.timestamp - b.timestamp)
-
-    return data
   }
 
   // 取得頻道訊息
-  const fetchChannelMessages = async (message: MessageAPI.Request.GetMessages) => {
-    const params: { before?: string; limit: number } = { limit: message.limit }
-    if (message.message_id) {
-      params.before = message.message_id
+  const fetchChannelMessages = async (message: MessageAPI.Request.GetMessages): Promise<void> => {
+    try {
+      const params: { before?: string; limit: number } = { limit: message.limit }
+      if (message.message_id) {
+        params.before = message.message_id
+      }
+      const { data: response } = await api.get<APIResponse<Message[]>>('/channels/' + message.room_id + '/messages', { params })
+      const data = handleAPIResponse(response, '獲取頻道訊息')
+
+      // 依序加入
+      messages.value.push(...data)
+
+      // 去重
+      messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
+
+      // 排序
+      messages.value.sort((a, b) => a.timestamp - b.timestamp)
+    } catch (error) {
+      throw error
     }
-    const { data: response } = await api.get('/channels/' + message.room_id + '/messages', { params })
-    const data = response.data as Message[]
-
-    // 依序加入
-    messages.value.push(...data)
-
-    // 去重
-    messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
-
-    // 排序
-    messages.value.sort((a, b) => a.timestamp - b.timestamp)
-
-    return data
   }
 
   // 清空訊息列表
@@ -400,7 +416,7 @@ export const useChatStore = defineStore('chat', () => {
     sendMessage,
     messages,
     channels,
-    dm_rooms,
+    dmRooms,
     currentChannel,
     fetchHideDMRoom,
     fetchDMRoomList,

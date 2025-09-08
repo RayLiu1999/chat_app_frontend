@@ -12,37 +12,46 @@
       <div class="w-100 mr-auto">
         <h2 class="mb-2 text-2xl font-bold text-white">歡迎回來！</h2>
         <p class="mb-6 text-gray-400">我們很高興又見到您了！</p>
-        <form>
-          <div v-for="(item, index) in columns" :key="index" class="mb-4">
-            <label
-              class="mb-1 block flex items-center"
-              :for="item.name"
-              :class="item.error ? 'text-red-400' : 'text-gray-400'"
-            >
-              {{ item.label }}
-              <i
-                v-if="item.required && !item.error"
-                class="bi bi-asterisk"
-                style="font-size: 0.4rem; margin-left: 0.25rem; color: red"
-              ></i>
-              <span v-if="item.error" class="font-italic ml-1 text-red-400">- {{ item.errorMessage }}</span>
-            </label>
-            <input
-              :id="item.name"
-              v-model="item.value"
-              class="w-full rounded bg-gray-700 p-2 text-white"
-              :name="item.name"
-              :type="item.type"
-              :placeholder="item.placeholder"
+        
+        <el-form
+          ref="formRef"
+          :model="formData"
+          :rules="rules"
+          label-position="top"
+          class="login-form"
+        >
+          <el-form-item label="電子郵件" prop="email">
+            <el-input
+              v-model="formData.email"
+              type="email"
+              placeholder="請輸入電子信箱"
+              size="large"
             />
-          </div>
-          <button
-            class="hover-bg-blue-700 w-full rounded bg-blue-600 p-2 text-white"
-            @click="handleSubmit"
-          >
-            登入
-          </button>
-        </form>
+          </el-form-item>
+          
+          <el-form-item label="密碼" prop="password">
+            <el-input
+              v-model="formData.password"
+              type="password"
+              placeholder="請輸入密碼"
+              size="large"
+              show-password
+            />
+          </el-form-item>
+          
+          <el-form-item>
+            <el-button
+              type="primary"
+              size="large"
+              style="width: 100%"
+              :loading="isLoading"
+              @click="handleSubmit"
+            >
+              登入
+            </el-button>
+          </el-form-item>
+        </el-form>
+        
         <div class="mt-4 text-gray-400">
           需要一個帳號？
           <RouterLink class="text-blue-400" to="/register"> 註冊 </RouterLink>
@@ -53,90 +62,100 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
+  import { ref, reactive } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
+  import { ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus'
+  import type { FormInstance } from 'element-plus'
   import { useUserStore } from '@/stores/user'
+  import { createValidationRules } from '@/utils/validate'
 
   const router = useRouter()
+  const formRef = ref<FormInstance>()
+  const isLoading = ref(false)
 
-  interface Column {
-    label: string
-    name: string
-    type: string
-    required: boolean
-    value: string
-    error: boolean
-    errorMessage: string
-    placeholder: string
-  }
-
-  const columns = ref<Record<string, Column>>({
-    email: {
-      label: '電子郵件',
-      name: 'email',
-      type: 'email',
-      required: true,
-      value: '',
-      error: false,
-      errorMessage: '必要',
-      placeholder: '請輸入電子信箱'
-    },
-    password: {
-      label: '密碼',
-      name: 'password',
-      type: 'password',
-      required: true,
-      value: '',
-      error: false,
-      errorMessage: '必要',
-      placeholder: '請輸入大於6位的密碼'
-    },
+  // 表單資料
+  const formData = reactive({
+    email: '',
+    password: ''
   })
 
-  const handleSubmit = async (event: Event) => {
-    event.preventDefault()
+  // 驗證規則
+  const rules = reactive({
+    email: [
+      createValidationRules.required('請輸入電子郵件'),
+      createValidationRules.email()
+    ],
+    password: [
+      createValidationRules.required('請輸入密碼'),
+      createValidationRules.length(6, 50, '密碼長度需在6-50個字符之間')
+    ]
+  })
 
-    // 重置錯誤訊息
-    for (const key in columns.value) {
-      columns.value[key].error = false
-      columns.value[key].errorMessage = ''
+  const handleSubmit = async () => {
+    if (!formRef.value) return
+
+    try {
+      // 驗證表單
+      const isValid = await formRef.value.validate()
+      if (!isValid) return
+
+      isLoading.value = true
+
+      // 登入
+      const userStore = useUserStore()
+      await userStore.fetchLogin({ 
+        email: formData.email, 
+        password: formData.password 
+      })
+      
+      // 登入成功後跳轉
+      router.push('/channels/@me')
+      ElMessage.success('登入成功')
+    } catch (error: any) {
+      console.error('登入失敗:', error)
+      ElMessage.error(error.message || '登入失敗，請檢查您的帳號密碼')
+    } finally {
+      isLoading.value = false
     }
-
-    let error = false
-
-    // 檢查必填欄位
-    for (const key in columns.value) {
-      if (columns.value[key].required && !columns.value[key].value) {
-        columns.value[key].error = true
-        columns.value[key].errorMessage = '此欄位為必填'
-        error = true
-      } else {
-        columns.value[key].error = false
-      }
-    }
-
-    // 驗證email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (columns.value.email.value && !emailRegex.test(columns.value.email.value)) {
-      columns.value.email.error = true
-      columns.value.email.errorMessage = '請輸入有效的電子郵件'
-      return
-    }
-
-    // 驗證密碼
-    if (columns.value.password.value && columns.value.password.value.length < 6) {
-      columns.value.password.error = true
-      columns.value.password.errorMessage = '密碼長度需大於6位'
-      return
-    }
-
-    if (error) {
-      return
-    }
-
-    // 登入
-    const userStore = useUserStore()
-    const res = await userStore.login(columns.value.email.value, columns.value.password.value)
-    console.log(res)
   }
 </script>
+
+<style lang="scss" scoped>
+.login-form {
+  :deep(.el-form-item__label) {
+    color: #d1d5db !important;
+    font-weight: 500;
+  }
+  
+  :deep(.el-input__wrapper) {
+    background-color: #374151 !important;
+    border: 1px solid transparent !important;
+    
+    &:hover {
+      border-color: transparent !important;
+    }
+    
+    &.is-focus {
+      border-color: #3b82f6 !important;
+    }
+  }
+  
+  :deep(.el-input__inner) {
+    color: white !important;
+    
+    &::placeholder {
+      color: #9ca3af !important;
+    }
+  }
+  
+  :deep(.el-button--primary) {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    
+    &:hover {
+      background-color: #1d4ed8 !important;
+      border-color: #1d4ed8 !important;
+    }
+  }
+}
+</style>

@@ -199,7 +199,7 @@ const editFieldData = ref<{
 const confirmData = ref<{
   title: string
   message: string
-  type: 'info' | 'warning' | 'error' | 'success'
+  type: 'info' | 'warning' | 'danger' | 'success'
   confirmText: string
   onConfirm: () => void
 }>({
@@ -354,7 +354,7 @@ const deactivateAccount = () => {
   confirmData.value = {
     title: '停用帳號',
     message: '停用帳號後，您將無法使用此帳號登入，但可以隨時恢復。確定要繼續嗎？',
-    type: 'error',
+    type: 'danger',
     confirmText: '確認停用',
     onConfirm: async () => {
       try {
@@ -362,7 +362,7 @@ const deactivateAccount = () => {
 
         if (response.status === 'success') {
           ElMessage.success('帳號已停用')
-          userStore.logout()
+          userStore.fetchLogout()
         } else {
           ElMessage.error(response.message || '停用失敗')
         }
@@ -380,7 +380,7 @@ const deleteAccount = () => {
   confirmData.value = {
     title: '刪除帳號',
     message: '⚠️ 警告：刪除帳號是不可逆的操作！您的所有資料、訊息和檔案都會被永久刪除。',
-    type: 'error',
+    type: 'danger',
     confirmText: '我了解風險，繼續刪除',
     onConfirm: () => {
       // 第二步確認，需要輸入使用者名稱
@@ -410,7 +410,7 @@ const handleDeleteConfirm = async (inputUsername: string) => {
 
     if (response.status === 'success') {
       ElMessage.success('帳號已刪除')
-      userStore.logout()
+      userStore.fetchLogout()
     } else {
       ElMessage.error(response.message || '刪除失敗')
     }

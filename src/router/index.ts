@@ -13,7 +13,6 @@ import { useChatStore } from '@/stores/chat'
 import { useChannelStore } from '@/stores/channel'
 import MemberList from '@/components/MemberList.vue'
 import UserProfile from '@/components/UserProfile.vue'
-import { de } from 'element-plus/es/locales.mjs'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -98,9 +97,11 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && isAuth) {
     // 取得 user 資料
     if (userStore.userData === null) {
-      const userData = await userStore.fetchUser()
-      if (userData) {
-        userStore.setUserData(userData)
+      try {
+        await userStore.fetchUser()
+      } catch (error) {
+        console.error('獲取使用者資料失敗:', error)
+        return next('/login')
       }
     }
 

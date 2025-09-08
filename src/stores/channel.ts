@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import api from '@/api/axios'
 import type { Channel } from '@/types/chat'
 import type { ChannelAPI, APIResponse } from '@/types/api'
-import { ElMessage } from 'element-plus'
+import { handleDeleteResponse, handleAPIResponse } from '@/api/utils'
 
 export const useChannelStore = defineStore('channel', () => {
   // 狀態
@@ -14,132 +14,85 @@ export const useChannelStore = defineStore('channel', () => {
   const lastVisitedChannels = ref<Record<string, string>>({})
 
   // 獲取伺服器頻道列表
-  const fetchServerChannels = async (serverId: string) => {
+  const fetchServerChannels = async (serverId: string): Promise<void> => {
     try {
-      const { data: response } = await api.get(`/servers/${serverId}/channels`)
-      channels.value = response.data as Channel[]
-    } catch (error: any) {
-      console.error('獲取頻道列表失敗:', error)
-      ElMessage.error('獲取頻道列表失敗')
+      const { data: response } = await api.get<APIResponse<Channel[]>>(`/servers/${serverId}/channels`)
+      const channelList = handleAPIResponse(response, '獲取伺服器頻道')
+      channels.value = channelList
+    } catch (error) {
+      throw error
     }
   }
 
   // 獲取單個頻道資訊
-  const fetchChannel = async (channelId: string): Promise<Channel | null> => {
+  const fetchChannel = async (channelId: string): Promise<void> => {
     try {
       const { data: response } = await api.get<APIResponse<Channel>>(`/channels/${channelId}`)
-
-      if (response.status === 'success') {
-        const channel = response.data
-        if (channel) {
-          currentChannel.value = channel
-          
-          // 更新本地頻道列表中的頻道資訊
-          const index = channels.value.findIndex(c => c.id === channel.id)
-          if (index !== -1) {
-            channels.value[index] = channel
-          }
-        }
-        return channel || null
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        return null
+      const channel = handleAPIResponse(response, '獲取頻道資訊')
+      
+      currentChannel.value = channel
+      // 更新本地頻道列表中的頻道資訊
+      const index = channels.value.findIndex(c => c.id === channel.id)
+      if (index !== -1) {
+        channels.value[index] = channel
       }
-    } catch (error: any) {
-      console.error('獲取頻道資訊失敗:', error)
-      ElMessage.error('獲取頻道資訊失敗')
-      return null
+    } catch (error) {
+      throw error
     }
   }
 
   // 創建頻道
-  const createChannel = async (serverId: string, channelData: ChannelAPI.Request.Create): Promise<Channel | null> => {
+  const fetchCreateChannel = async (serverId: string, channelData: ChannelAPI.Request.Create): Promise<Channel> => {
     try {
       const { data: response } = await api.post<APIResponse<Channel>>(`/servers/${serverId}/channels`, channelData)
-
-      if (response.status === 'success') {
-        const newChannel = response.data
-        if (newChannel) {
-          channels.value.push(newChannel)
-          ElMessage.success('創建頻道成功')
-        }
-        return newChannel || null
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        return null
-      }
-    } catch (error: any) {
-      console.error('創建頻道失敗:', error)
-      ElMessage.error('創建頻道失敗')
-      return null
+      const newChannel = handleAPIResponse(response, '建立頻道')
+      channels.value.push(newChannel)
+      return newChannel
+    } catch (error) {
+      throw error
     }
   }
 
   // 更新頻道
-  const updateChannel = async (channelId: string, channelData: ChannelAPI.Request.Update): Promise<Channel | null> => {
+  const fetchUpdateChannel = async (channelId: string, channelData: ChannelAPI.Request.Update): Promise<Channel> => {
     try {
       const { data: response } = await api.put<APIResponse<Channel>>(`/channels/${channelId}`, channelData)
-
-      if (response.status === 'success') {
-        const updatedChannel = response.data
-        if (updatedChannel) {
-          // 更新本地頻道列表
-          const index = channels.value.findIndex(c => c.id === channelId)
-          if (index !== -1) {
-            channels.value[index] = updatedChannel
-          }
-          
-          // 更新當前頻道（如果是當前頻道）
-          if (currentChannel.value?.id === channelId) {
-            currentChannel.value = updatedChannel
-          }
-          
-          ElMessage.success('更新頻道成功')
-        }
-        return updatedChannel || null
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        return null
+      const updatedChannel = handleAPIResponse(response, '更新頻道')
+      
+      // 更新本地頻道列表
+      const index = channels.value.findIndex(c => c.id === channelId)
+      if (index !== -1) {
+        channels.value[index] = updatedChannel
       }
-    } catch (error: any) {
-      console.error('更新頻道失敗:', error)
-      ElMessage.error('更新頻道失敗')
-      return null
+      
+      // 更新當前頻道（如果是當前頻道）
+      if (currentChannel.value?.id === channelId) {
+        currentChannel.value = updatedChannel
+      }
+      
+      return updatedChannel
+    } catch (error) {
+      throw error
     }
   }
 
   // 刪除頻道
-  const deleteChannel = async (channelId: string): Promise<boolean> => {
+  const fetchDeleteChannel = async (channelId: string): Promise<void> => {
     try {
       const { data: response } = await api.delete<APIResponse<null>>(`/channels/${channelId}`)
-
-      if (response.status === 'success') {
-        // 從本地頻道列表中移除
-        channels.value = channels.value.filter(c => c.id !== channelId)
-        
-        // 如果刪除的是當前頻道，清空當前頻道
-        if (currentChannel.value?.id === channelId) {
-          currentChannel.value = null
-        }
-        
-        ElMessage.success('刪除頻道成功')
-        return true
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        return false
+      
+      // 使用 handleDeleteResponse 處理刪除回應
+      handleDeleteResponse(response, '刪除頻道')
+      
+      // 成功後更新本地狀態
+      channels.value = channels.value.filter(channel => channel.id !== channelId)
+      
+      // 如果刪除的是當前頻道，清空當前頻道
+      if (currentChannel.value?.id === channelId) {
+        currentChannel.value = null
       }
-    } catch (error: any) {
-      console.error('刪除頻道失敗:', error)
-      ElMessage.error('刪除頻道失敗')
-      return false
+    } catch (error) {
+      throw error
     }
   }
 
@@ -199,9 +152,9 @@ export const useChannelStore = defineStore('channel', () => {
     // 方法
     fetchServerChannels,
     fetchChannel,
-    createChannel,
-    updateChannel,
-    deleteChannel,
+    fetchCreateChannel,
+    fetchUpdateChannel,
+    fetchDeleteChannel,
     setCurrentChannel,
     getLastVisitedChannel,
     getDefaultChannelForServer,

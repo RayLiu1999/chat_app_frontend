@@ -9,12 +9,6 @@
   >
     <template #header>
       <div class="flex items-center">
-        <div class="flex-shrink-0">
-          <component
-            :is="iconComponent"
-            :class="iconColorClass"
-          />
-        </div>
         <h3 class="text-xl font-semibold text">{{ title }}</h3>
       </div>
     </template>
@@ -76,46 +70,13 @@
 import { ref, computed, watch } from 'vue'
 import { ElDialog } from 'element-plus'
 
-// Icons (using simple SVG components)
-const InfoIcon = {
-  template: `
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-    </svg>
-  `
-}
-
-const WarningIcon = {
-  template: `
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-    </svg>
-  `
-}
-
-const ErrorIcon = {
-  template: `
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
-    </svg>
-  `
-}
-
-const SuccessIcon = {
-  template: `
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-    </svg>
-  `
-}
-
 // Props
 interface Props {
   visible: boolean
   title: string
   message: string
   description?: string
-  type?: 'info' | 'warning' | 'error' | 'success'
+  type?: 'info' | 'warning' | 'danger' | 'success'
   width?: string
   confirmButtonText?: string
   cancelButtonText?: string
@@ -152,28 +113,10 @@ const visible = computed({
   set: (value) => emit('update:visible', value)
 })
 
-const iconComponent = computed(() => {
-  switch (props.type) {
-    case 'warning': return WarningIcon
-    case 'error': return ErrorIcon
-    case 'success': return SuccessIcon
-    default: return InfoIcon
-  }
-})
-
-const iconColorClass = computed(() => {
-  switch (props.type) {
-    case 'warning': return 'text-yellow-400'
-    case 'error': return 'text-red-400'
-    case 'success': return 'text-green-400'
-    default: return 'text-blue-400'
-  }
-})
-
 const confirmButtonClass = computed(() => {
   switch (props.type) {
     case 'warning': return 'bg-yellow-600 hover:bg-yellow-700 text-white'
-    case 'error': return 'bg-red-600 hover:bg-red-700 text-white'
+    case 'danger': return 'bg-red-600 hover:bg-red-700 text-white'
     case 'success': return 'bg-green-600 hover:bg-green-700 text-white'
     default: return 'bg-#5865f2 hover:bg-#4752c4 text-white'
   }

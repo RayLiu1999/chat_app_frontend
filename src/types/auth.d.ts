@@ -12,6 +12,14 @@ export interface User {
   updated_at?: number
 }
 
+export interface FriendRequest {
+  id: number
+  from_user: User
+  to_user: User
+  status: 'pending' | 'accepted' | 'rejected'
+  created_at: number
+}
+
 export interface CSRFToken {
   name: string
   value: string

@@ -1,24 +1,13 @@
 export interface APIResponse<T = any> {
-  status: string // "success" 或 "error"
-  code: number // 自定義錯誤碼，例如 1001 表示 "用戶不存在"
+  status: "success" | "error" // "success" 或 "error"
+  code: string // 自定義錯誤碼，例如 NOT_FOUND
   message: string // 訊息內容
-  displayable: boolean // 是否顯示給使用者看
+  details: any // 錯誤細節
   data?: T // 可選的數據
 }
 
 // Server
 export namespace ServerAPI {
-  export namespace Request {
-    export interface Create {
-      name: string
-      picture?: Blob
-    }
-
-    export interface Join {
-      server_id: string
-    }
-  }
-
   export namespace Response {
     export interface Server {
       id: string
@@ -116,6 +105,22 @@ export namespace DMRoomAPI {
       chat_with_user_id: string
     }
   }
+
+  export namespace Response {
+    export interface DMRoom {
+      room_id: string;
+      participants: {
+        id: string;
+        username: string;
+        nickname: string;
+        picture_url: string;
+      }[];
+      last_message?: {
+        content: string;
+        created_at: number;
+      };
+    }
+  }
 }
 
 // User
@@ -164,6 +169,21 @@ export namespace MessageAPI {
       room_id: string
       message_id?: string
       limit: number
+    }
+  }
+}
+
+// Friend
+export namespace FriendAPI {
+  export namespace Response {
+    export interface FriendRequest {
+      id: number;
+      sender_id: string;
+      receiver_id: string;
+      status: 'pending' | 'accepted' | 'rejected';
+      created_at: number;
+      sender_username: string;
+      sender_picture_url: string;
     }
   }
 }

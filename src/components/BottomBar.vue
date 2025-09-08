@@ -1,15 +1,20 @@
 <template>
   <div class="bg-#070922 absolute bottom-0 w-60">
     <div class="flex items-center p-2">
-      <AvatarImage
-        :src="userData?.picture_url"
-        alt="User"
-        size="md"
-        status="online"
-      />
-      <div class="ml-2 flex-1 min-w-0">
-        <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userData?.nickname }}</div>
-        <div class="text-xs weak-text">線上</div>
+      <div 
+        class="flex items-center flex-1 min-w-0 cursor-pointer hover:bg-#2b3375 rounded p-1 -m-1"
+        @click="userProfileDialogVisible = true"
+      >
+        <AvatarImage
+          :src="userData?.picture_url"
+          alt="User"
+          size="md"
+          status="online"
+        />
+        <div class="ml-2 flex-1 min-w-0">
+          <div class="text text-sm truncate overflow-hidden text-ellipsis">{{ userData?.nickname }}</div>
+          <div class="text-xs weak-text">線上</div>
+        </div>
       </div>
       <div class="weak-text ml-auto flex space-x-2">
         <el-tooltip
@@ -76,6 +81,7 @@
     </div>
   </div>
   <SettingDialog :dialog-visible="SettingDialogVisible" @update-visible="handleUpdate" />
+  <UserProfileDialog :dialog-visible="userProfileDialogVisible" @update-visible="handleUserProfileUpdate" />
 </template>
 <script lang="ts" setup>
   import { ref, computed, onMounted } from 'vue'
@@ -84,6 +90,7 @@
   import { useUserStore } from '@/stores/user'
 
   const SettingDialogVisible = ref(false)
+  const userProfileDialogVisible = ref(false)
   const micMuted = ref(true) // 預設為關閉
   const volumeMuted = ref(false)
   const micStatusBeforeVolumeMute = ref(false)
@@ -189,6 +196,11 @@
   // 更新 SettingDialog 的顯示狀態
   const handleUpdate = (value: boolean) => {
     SettingDialogVisible.value = value
+  }
+
+  // 更新 UserProfileDialog 的顯示狀態
+  const handleUserProfileUpdate = (value: boolean) => {
+    userProfileDialogVisible.value = value
   }
 
   const handleMicMute = async () => {

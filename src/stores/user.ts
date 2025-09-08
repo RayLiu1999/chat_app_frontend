@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import type { User } from '@/types/auth'
 import type { APIResponse } from '@/types/api'
 import api from '@/api/axios'
+import { handleAPIResponse } from '@/api/utils'
 
 export const useUserStore = defineStore('user', () => {
   const userData = ref<User | null>(null)
@@ -12,48 +13,45 @@ export const useUserStore = defineStore('user', () => {
    * API Methods
    */
 
-  // 登入
-  const login = async (email: string, password: string): Promise<APIResponse> => {
+    // 登入
+  const fetchLogin = async (userData: { email: string; password: string }): Promise<void> => {
     try {
-      const { data: response } = await api.post('/login', {
-        email,
-        password,
-      })
-
-      // 設置 token
-      setAccessToken(response.data.access_token)
-
-      // 成功就跳轉到個人頁
-      if (response.status === 'success') {
-        location.href = '/channels/@me'
-      }
-      return response
+      const { data: response } = await api.post<APIResponse<{ access_token: string }>>('/login', userData)
+      const loginData = handleAPIResponse(response, '登入')
+      
+      setAccessToken(loginData.access_token)
     } catch (error) {
-      console.error('Failed to login:', error)
+      throw error
+    }
+  }
+
+  // 註冊
+  const fetchRegister = async (userData: { username: string; nickname: string; password: string; email: string }): Promise<void> => {
+    try {
+      const { data: response } = await api.post<APIResponse<any>>('/register', userData)
+      handleAPIResponse(response, '註冊')
+    } catch (error) {
       throw error
     }
   }
 
   // 登出
-  const logout = (): void => {
+  const fetchLogout = (): void => {
     api.post('/logout')
     location.href = '/login'
   }
 
   // 取得 user
-  const fetchUser = async () => {
+  const fetchUser = async (): Promise<void> => {
     try {
-      const { data: response } = await api.get('/user')
-      const data = response.data as User
+      const { data: response } = await api.get<APIResponse<User>>('/user')
+      const data = handleAPIResponse(response, '獲取使用者資料')
       userData.value = data
-
-      return data
     } catch (error) {
       // 登出
       clearUserData()
       clearAccessToken()
-      console.error('Failed to fetch user:', error)
-      logout()
+      fetchLogout()
     }
   }
 
@@ -70,7 +68,6 @@ export const useUserStore = defineStore('user', () => {
 
       return token
     } catch (error) {
-      // console.error('Failed to refresh access token:', error)
       throw error
     }
   }
@@ -110,7 +107,7 @@ export const useUserStore = defineStore('user', () => {
       }
     } catch (error) {
       // 如果解碼失敗，返回未驗證狀態
-      // console.error('Invalid access token:', error)
+      console.error('無效的訪問令牌:', error)
       return false
     }
   }
@@ -143,8 +140,9 @@ export const useUserStore = defineStore('user', () => {
     userData,
     accessToken,
     // API
-    login,
-    logout,
+    fetchLogin,
+    fetchRegister,
+    fetchLogout,
     fetchUser,
     // Methods
     setUserData,

@@ -39,10 +39,30 @@
             <div class="font-bold text-lg mb-2">新增好友</div>
             <div class="weak-text text-sm">您可以利用使用者名稱來新增好友。</div>
           </div>
-          <div class="flex space-x-2">
-            <input v-model="newFriendUsername" placeholder="請輸入使用者名稱" class="bg-#14175a text flex-1 rounded p-2" />
-            <button @click="sendFriendRequest" :disabled="!newFriendUsername" class="bg-#513a9a hover:bg-#5f4d9c text rounded px-4 py-1">傳送好友邀請</button>
-          </div>
+          <el-form
+            ref="addFriendFormRef"
+            :model="addFriendForm"
+            :rules="addFriendRules"
+            class="flex space-x-2"
+          >
+            <el-form-item prop="username" class="flex-1 mb-0">
+              <el-input
+                v-model="addFriendForm.username"
+                placeholder="請輸入使用者名稱"
+                class="custom-input"
+                @keydown.enter="sendFriendRequest"
+              />
+            </el-form-item>
+            <el-button
+              type="primary"
+              class="add-friend-btn"
+              :disabled="!addFriendForm.username.trim()"
+              :loading="isAddingFriend"
+              @click="sendFriendRequest"
+            >
+              傳送好友邀請
+            </el-button>
+          </el-form>
         </div>
         
         <!-- 好友列表 -->
@@ -121,12 +141,14 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref, onMounted } from 'vue'
+  import { computed, ref, onMounted, reactive } from 'vue'
   import { useFriendStore } from '@/stores/friend'
   import { useChatStore } from '@/stores/chat'
   import type { User } from '@/types/auth'
-  import { ElMessage } from 'element-plus';
-  import ConfirmDialog from './dialogs/ConfirmDialog.vue';
+  import { ElMessage, ElForm, ElFormItem, ElInput, ElButton } from 'element-plus'
+  import type { FormInstance } from 'element-plus'
+  import { createValidationRules } from '@/utils/validate'
+  import ConfirmDialog from './dialogs/ConfirmDialog.vue'
   import { useRouter } from 'vue-router'
   import PositionMenu from './PositionMenu.vue'
   
@@ -144,11 +166,27 @@
 
   const selectedStatus = ref<StatusKey>('online')
   const newFriendUsername = ref('')
+  const addFriendFormRef = ref<FormInstance>()
+  const isAddingFriend = ref(false)
+  
+  // 新增好友表單
+  const addFriendForm = reactive({
+    username: ''
+  })
+  
+  // 新增好友驗證規則
+  const addFriendRules = reactive({
+    username: [
+      createValidationRules.required('請輸入使用者名稱'),
+      createValidationRules.username()
+    ]
+  })
+  
   const showConfirmDialog = ref(false)
   const confirmData = ref<{
     title: string
     message: string
-    type: 'info' | 'warning' | 'error' | 'success'
+    type: 'info' | 'warning' | 'danger' | 'success'
     confirmText: string
     onConfirm: () => void
   }>({
@@ -188,22 +226,40 @@
   const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
 
   onMounted(async () => {
-    await friendStore.fetchFriends()
-  })
-  
-  const sendFriendRequest = async () => {
     try {
-      await friendStore.sendFriendRequest(newFriendUsername.value)
-      newFriendUsername.value = ''
+      await friendStore.fetchFriends()
+    } catch (error) {
+      console.error('載入好友列表失敗:', error)
+    }
+  })
+
+  // 發送好友請求
+  const sendFriendRequest = async () => {
+    if (!addFriendFormRef.value) return
+    
+    try {
+      // 驗證表單
+      const isValid = await addFriendFormRef.value.validate()
+      if (!isValid) return
+      
+      isAddingFriend.value = true
+      await friendStore.fetchSendFriendRequest(addFriendForm.username)
+      
+      // 成功後重置表單
+      addFriendForm.username = ''
+      addFriendFormRef.value.resetFields()
+      ElMessage.success('好友邀請已發送')
     } catch (error) {
       console.error('發送好友請求失敗:', error)
+    } finally {
+      isAddingFriend.value = false
     }
   }
   
   // 接受好友請求
   const acceptFriendRequest = async (friendId: string) => {
     try {
-      await friendStore.acceptFriendRequest(friendId)
+      await friendStore.fetchAcceptFriendRequest(friendId)
     } catch (error) {
       console.error('接受好友請求失敗:', error)
     }
@@ -212,7 +268,7 @@
   // 拒絕好友請求
   const rejectFriendRequest = async (friendId: string) => {
     try {
-      await friendStore.rejectFriendRequest(friendId)
+      await friendStore.fetchRejectFriendRequest(friendId)
     } catch (error) {
       console.error('拒絕好友請求失敗:', error)
     }
@@ -236,13 +292,17 @@
  * @param friend 好友物件
  */
 async function goToChat(friend: User) {
-  // 建立DM聊天室
-  const dmRoom = await chatStore.fetchCreateDMRoom({ chat_with_user_id: friend.id })
+  try {
+    // 建立DM聊天室
+    const dmRoom = await chatStore.fetchCreateDMRoom({ chat_with_user_id: friend.id })
 
-  // 跳轉到聊天室
-  router.push({
-    path: `/channels/@me/${dmRoom.room_id}`,
-  })
+    // 跳轉到聊天室
+    router.push({
+      path: `/channels/@me/${dmRoom.room_id}`,
+    })
+  } catch (error) {
+    console.error('開始聊天失敗:', error)
+  }
 }
 
 /**
@@ -289,7 +349,7 @@ function removeFriend(friend: User) {
     confirmText: '確定',
     onConfirm: () => {
       // TODO: 呼叫API實際移除好友
-      ElMessage.success('已移除好友（待串接API）');
+      ElMessage.info('已移除好友（待串接API）');
     }
   }
   showConfirmDialog.value = true
@@ -297,6 +357,46 @@ function removeFriend(friend: User) {
 
 // ...原有export等內容
 </script>
+
+<style lang="scss" scoped>
+/* 自定義輸入框樣式 */
+:deep(.custom-input .el-input__wrapper) {
+  background-color: #14175a !important;
+  border: none !important;
+  
+  .el-input__inner {
+    color: white !important;
+    
+    &::placeholder {
+      color: #9ca3af !important;
+    }
+  }
+}
+
+/* 自定義按鈕樣式 */
+:deep(.add-friend-btn) {
+  background-color: #513a9a !important;
+  border-color: #513a9a !important;
+  
+  &:hover {
+    background-color: #5f4d9c !important;
+    border-color: #5f4d9c !important;
+  }
+}
+
+/* 表單項目樣式調整 */
+:deep(.el-form-item) {
+  margin-bottom: 8px !important;
+}
+
+:deep(.el-form-item__error) {
+  color: #f56565;
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+  padding-bottom: 2px;
+}
+</style>
 
 <style scoped>
   .abc {

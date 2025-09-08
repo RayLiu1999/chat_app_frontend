@@ -154,7 +154,7 @@ const showConfirmDialog = ref(false)
 const confirmData = ref<{
   title: string
   message: string
-  type: 'info' | 'warning' | 'error' | 'success'
+  type: 'info' | 'warning' | 'danger' | 'success'
   confirmText: string
   onConfirm: () => void
 }>({
@@ -274,7 +274,7 @@ const handleSystemAction = async (action: string) => {
         type: 'warning',
         confirmText: '登出',
         onConfirm: () => {
-          userStore.logout()
+          userStore.fetchLogout()
           closeDialog()
           ElMessage.success('已登出')
         }

@@ -1,23 +1,26 @@
 import axios from 'axios'
-import type { AxiosInstance, AxiosRequestConfig } from 'axios'
 import { useUserStore } from '@/stores/user'
 import { useResMsgStore } from '@/stores/res_msg'
-import type { CSRFToken } from '@/types/auth'
 import type { APIResponse } from '@/types/api'
-import { generateCSRFToken } from '@/utils/csrf'
+import { ElMessage } from 'element-plus'
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN
 let API_URL = ''
-if (import.meta.env.ONLINE) {
+
+if (import.meta.env.VITE_ONLINE === 'true') {
   API_URL = 'https://' + API_DOMAIN
 } else {
   API_URL = 'http://' + API_DOMAIN
 }
 
+// 需要權限驗證的路徑
 const needsAuthRoutes = ['/user', '/logout', '/channels', '/servers', '/friends', '/dm_rooms']
+// 需要 cookie 的路徑
+const needCookieRoutes = ['/login', '/logout', '/refresh_token']
+
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
-
+  
 // 用來發送失敗的請求
 function onRefreshed(token: string) {
   refreshSubscribers.forEach((callback) => callback(token))
@@ -48,24 +51,16 @@ api.interceptors.request.use(
 
     // 判斷是否需要權限驗證的邏輯
     const needsAuth = needsAuthRoutes.some((path) => config.url?.startsWith(path))
-
-    // get以外皆需要CSRF token
-    if (config.method !== 'get') {
-      const token = generateCSRFToken()
-      const csrfToken: CSRFToken = {
-        name: '',
-        value: '',
-      }
-      csrfToken.name = token.name
-      csrfToken.value = token.value
-      config.headers['X-CSRF-Name'] = csrfToken.name
-      config.headers['X-CSRF-Token'] = csrfToken.value
-      config.withCredentials = true
-    }
+    const needCookie = needCookieRoutes.some((path) => config.url?.startsWith(path))
 
     // 如果需要權限驗證，加入 access token
     if (needsAuth) {
       config.headers['Authorization'] = `Bearer ${accessToken}`
+    }
+
+    // 如果需要 cookie，加入 withCredentials
+    if (needCookie) {
+      config.withCredentials = true
     }
     return config
   },
@@ -75,26 +70,16 @@ api.interceptors.request.use(
 // 設置響應攔截器，處理回應和錯誤
 api.interceptors.response.use(
   (response) => {
-    // 處理成功的回應
-    const apiResponse = response.data as APIResponse
-    
-    // 如果是成功狀態且有消息，顯示成功消息
-    if (apiResponse.status === 'success' && apiResponse.message && apiResponse.displayable) {
-      const resMsgStore = useResMsgStore()
-      resMsgStore.showSuccess(apiResponse.message)
-    }
-    
     return response
   },
   async (error) => {
     const { config, response } = error
     const originalRequest = config
     const userStore = useUserStore()
-    const resMsgStore = useResMsgStore()
 
     // 處理沒有響應的情況（如網絡錯誤）
     if (!response) {
-      resMsgStore.showError(1002, '網絡連接失敗，請檢查您的網絡連接')
+      ElMessage.error('網絡連接失敗，請檢查您的網絡連接')
       return Promise.reject(error)
     }
 
@@ -116,8 +101,8 @@ api.interceptors.response.use(
           })
           .catch(() => {
             isRefreshing = false
-            userStore.logout() // 如果刷新失敗，登出
-            resMsgStore.showError(2002) // 顯示登入過期錯誤
+            userStore.fetchLogout() // 如果刷新失敗，登出
+            ElMessage.error('登入過期，請重新登入')
             return Promise.reject(error)
           })
       }
@@ -131,38 +116,26 @@ api.interceptors.response.use(
       })
     }
 
-    // 處理 API 錯誤響應
-    if (response.data) {
-      const apiResponse = response.data as APIResponse
-      
-      // 根據 API 回應處理錯誤
-      if (apiResponse.status === 'error') {
-        // 顯示對應錯誤訊息
-
-        if (apiResponse.displayable) {
-          if (apiResponse.message) {
-            resMsgStore.showError(apiResponse.code, apiResponse.message)
-          } else {
-            resMsgStore.showError(apiResponse.code)
+    // 對於其他狀態碼（400、403、404、500等），直接返回 response
+    if (response.status >= 400 && response.status < 600) {
+      // 處理 API 錯誤響應
+      if (response.data) {
+        const apiResponse = response.data as APIResponse
+        
+        // 根據 API 回應處理錯誤
+        if (apiResponse.status === 'error') {
+          // 系統錯誤訊息(統一在這邊顯示)
+          if (apiResponse.details) {
+            console.error(`系統錯誤: ${apiResponse.details}`);
           }
         }
-
-        // 系統錯誤訊息
-        console.error(`系統錯誤: ${apiResponse.message}`);
-        
-        // 特殊狀態碼處理
-        if (apiResponse.code === 2002) { // Token 過期
-          userStore.logout()
-        }
       }
-    } else {
-      // 其他 HTTP 錯誤
-      let errorCode = 1000 // 默認錯誤碼
-      if (response.status === 403) errorCode = 2003 // 無權限
-      else if (response.status === 404) errorCode = 1001 // 資源不存在
-      else if (response.status >= 500) errorCode = 1002 // 伺服器錯誤
-      
-      resMsgStore.showError(errorCode)
+
+      // 將 error 轉換為正常的 response 物件返回
+      return Promise.resolve({
+        ...response,
+        data: response.data
+      })
     }
 
     return Promise.reject(response)

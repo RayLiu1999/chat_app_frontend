@@ -1,10 +1,15 @@
+/**
+ * 響應訊息處理 Store
+ * #TODO: 暫時未使用
+ */
+
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
 // 定義錯誤代碼對應的訊息
 export interface ErrorCodeMap {
-  [key: number]: string
+  [key: string]: string
 }
 
 // 預設錯誤訊息
@@ -14,34 +19,46 @@ export const useResMsgStore = defineStore('response_message', () => {
   // 錯誤代碼映射表
   const errorCodeMap = ref<ErrorCodeMap>({
     // 通用錯誤
-    1000: '操作失敗',
-    1001: '請求參數錯誤',
-    1002: '伺服器內部錯誤',
-    
-    // 認證錯誤
-    2000: '未授權的請求',
-    2001: '登入失敗，請檢查信箱或密碼',
-    2002: '您的登入已過期，請重新登入',
-    2003: '您沒有權限進行此操作',
-    2004: '無效的 Token',
-    
+    OPERATION_FAILED: '操作失敗',
+    INVALID_PARAMS: '請求參數錯誤',
+    INTERNAL_SERVER: '伺服器內部錯誤',
+    NOT_FOUND: '找不到資源',
+    FORBIDDEN: '禁止訪問',
+
+    // 認證相關錯誤
+    UNAUTHORIZED: '未授權的請求',
+    LOGIN_FAILED: '登入失敗',
+    LOGIN_EXPIRED: '登入已過期',
+    NO_PERMISSION: '無權限操作',
+    INVALID_TOKEN: '無效的 Token',
+    INVALID_ORIGIN: '無效的 Origin',
+
     // 使用者相關錯誤
-    3000: '使用者不存在',
-    3001: '該用戶名已被使用',
-    3002: '該信箱已被使用',
-    
+    USER_NOT_FOUND: '使用者不存在',
+    USERNAME_EXISTS: '用戶名已存在',
+    EMAIL_EXISTS: '信箱已存在',
+
+    // 好友相關錯誤
+    FRIEND_EXISTS: '已是好友',
+    FRIEND_REQUEST_EXISTS: '已有好友請求',
+    FRIEND_REQUEST_NOT_FOUND: '好友請求不存在',
+    NOT_FRIENDS: '不是好友',
+
     // 伺服器相關錯誤
-    4000: '伺服器不存在',
-    4001: '您沒有權限管理此伺服器',
-    4002: '無法創建伺服器',
-    
+    SERVER_NOT_FOUND: '伺服器不存在',
+    NO_SERVER_PERMISSION: '無伺服器管理權限',
+    CREATE_SERVER_FAILED: '創建伺服器失敗',
+
     // 頻道相關錯誤
-    5000: '頻道不存在',
-    5001: '無法創建頻道',
-    
+    CHANNEL_NOT_FOUND: '頻道不存在',
+    CREATE_CHANNEL_FAILED: '創建頻道失敗',
+
     // 訊息相關錯誤
-    6000: '訊息發送失敗',
-    6001: '無法獲取訊息歷史記錄',
+    SEND_MESSAGE_FAILED: '訊息發送失敗',
+    GET_MESSAGES_FAILED: '獲取訊息失敗',
+
+    // 聊天室相關錯誤
+    ROOM_NOT_FOUND: '聊天室不存在',
   })
 
   /**

@@ -1,11 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useUserStore } from '@/stores/user'
 import type { Server, ServerDetail, ServerMember } from '@/types/chat'
-import type { ServerAPI } from '@/types/api'
 import api from '@/api/axios'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
+import type { ChannelAPI, APIResponse } from '@/types/api'
+import { handleDeleteResponse, handleAPIResponse } from '@/api/utils'
 
 export const useServerStore = defineStore('server', () => {
   const router = useRouter()
@@ -16,44 +15,34 @@ export const useServerStore = defineStore('server', () => {
   const currentServerDetail = ref<ServerDetail | null>(null)
   
   // 取得伺服器列表
-  const fetchServerList = async () => {
+  const fetchServerList = async (): Promise<void> => {
     try {
-      const { data: response } = await api.get('/servers')
-      if (response.status === 'success') {
-        servers.value = response.data as Server[]
-      } else {
-        throw new Error(response.message)
-      }
+      const { data: response } = await api.get<APIResponse<Server[]>>('/servers')
+      const serverList = handleAPIResponse(response, '獲取伺服器列表')
+      servers.value = serverList
     } catch (error) {
-      console.error('獲取伺服器列表失敗:', error)
-      ElMessage.error('獲取伺服器列表失敗')
+      throw error
     }
   }
 
   // 取得伺服器詳細資訊
-  const fetchServerDetail = async (serverId: string): Promise<ServerDetail | null> => {
+  const fetchServerDetail = async (serverId: string): Promise<void> => {
     try {
       // 如果已經有快取，直接返回
       if (serverDetails.value.has(serverId)) {
         const detail = serverDetails.value.get(serverId)!
         currentServerDetail.value = detail
-        return detail
+        return
       }
 
-      const { data: response } = await api.get(`/servers/${serverId}/detail`)
-      if (response.status === 'success') {
-        const detail = response.data as ServerDetail
-        // 快取伺服器詳細資訊
-        serverDetails.value.set(serverId, detail)
-        currentServerDetail.value = detail
-        return detail
-      } else {
-        throw new Error(response.message)
-      }
+      const { data: response } = await api.get<APIResponse<ServerDetail>>(`/servers/${serverId}/detail`)
+      const detail = handleAPIResponse(response, '獲取伺服器詳細資訊')
+      
+      // 快取伺服器詳細資訊
+      serverDetails.value.set(serverId, detail)
+      currentServerDetail.value = detail
     } catch (error) {
-      console.error('獲取伺服器詳細資訊失敗:', error)
-      ElMessage.error('獲取伺服器詳細資訊失敗')
-      return null
+      throw error
     }
   }
 
@@ -89,7 +78,7 @@ export const useServerStore = defineStore('server', () => {
   }
 
   // 創建伺服器
-  const createServer = async (server: ServerAPI.Request.Create) => {
+  const fetchCreateServer = async (server: {name: string, picture?: Blob}): Promise<Server> => {
     try {
       const formData = new FormData()
       formData.append('name', server.name)
@@ -97,155 +86,85 @@ export const useServerStore = defineStore('server', () => {
         formData.append('picture', server.picture)
       }
 
-      const { data: response } = await api.post('/servers', formData)
-      if (response.status === 'success') {
-        servers.value.push(response.data as Server)
-        ElMessage.success('成功創建伺服器')
-        return response.data
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        throw new Error(response.message)
-      }
+      const { data: response } = await api.post<APIResponse<Server>>('/servers', formData)
+      const newServer = handleAPIResponse(response, '建立伺服器')
+      servers.value.push(newServer)
+      
+      return newServer
     } catch (error) {
-      console.error('創建伺服器失敗:', error)
-      ElMessage.error('創建伺服器失敗')
       throw error
     }
   }
 
   // 刪除伺服器
-  const deleteServer = async (serverId: string) => {
+  const fetchDeleteServer = async (serverId: string): Promise<void> => {
     try {
-      await ElMessageBox.confirm(
-        '確定要刪除此伺服器嗎？此操作無法復原。',
-        '刪除伺服器',
-        {
-          confirmButtonText: '確定',
-          cancelButtonText: '取消',
-          type: 'warning',
-          customClass: 'discord-message-box'
-        }
-      )
-
-      const { data: response } = await api.delete(`/servers/${serverId}`)
-      if (response.status === 'success') {
-        // 從列表中移除伺服器
-        servers.value = servers.value.filter(server => server.id !== serverId)
-        ElMessage.success('成功刪除伺服器')
-        
-        // 如果當前在被刪除的伺服器頁面，跳轉到私人訊息
-        if (router.currentRoute.value.params.server_id === serverId) {
-          router.push('/channels/@me')
-        }
-        
-        return response.data
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        throw new Error(response.message)
+      const { data: response } = await api.delete<APIResponse<null>>(`/servers/${serverId}`)
+      
+      // 使用 handleDeleteResponse 處理刪除回應
+      handleDeleteResponse(response, '刪除伺服器')
+      
+      // 成功後更新本地狀態
+      servers.value = servers.value.filter(server => server.id !== serverId)
+      
+      // 清除伺服器詳情快取
+      clearServerDetailCache(serverId)
+      
+      // 如果是當前伺服器，清空當前伺服器詳情
+      if (currentServerDetail.value?.id === serverId) {
+        currentServerDetail.value = null
       }
-    } catch (error: any) {
-      if (error !== 'cancel') {
-        console.error('刪除伺服器失敗:', error)
-        ElMessage.error('刪除伺服器失敗')
-      }
+    } catch (error) {
       throw error
     }
   }
 
   // 離開伺服器
-  const leaveServer = async (serverId: string) => {
+  const fetchLeaveServer = async (serverId: string): Promise<void> => {
     try {
-      await ElMessageBox.confirm(
-        '確定要離開此伺服器嗎？',
-        '離開伺服器',
-        {
-          confirmButtonText: '確定',
-          cancelButtonText: '取消',
-          type: 'warning',
-          customClass: 'discord-message-box'
-        }
-      )
-
-      const { data: response } = await api.post(`/servers/${serverId}/leave`)
-      if (response.status === 'success') {
-        // 從列表中移除伺服器
-        servers.value = servers.value.filter(server => server.id !== serverId)
-        ElMessage.success('成功離開伺服器')
-        
-        // 如果當前在被離開的伺服器頁面，跳轉到私人訊息
-        // if (router.currentRoute.value.params.server_id === serverId) {
-        //   router.push('/channels/@me')
-        // }
-        
-        return response.data
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        throw new Error(response.message)
+      const { data: response } = await api.post<APIResponse<null>>(`/servers/${serverId}/leave`)
+      handleDeleteResponse(response, '離開伺服器')
+      
+      // 從列表中移除伺服器
+      servers.value = servers.value.filter(server => server.id !== serverId)
+      
+      // 清除伺服器詳情快取
+      clearServerDetailCache(serverId)
+      
+      // 如果是當前伺服器，清空當前伺服器詳情
+      if (currentServerDetail.value?.id === serverId) {
+        currentServerDetail.value = null
       }
-    } catch (error: any) {
-      if (error !== 'cancel') {
-        console.error('離開伺服器失敗:', error)
-        ElMessage.error('離開伺服器失敗')
-      }
+    } catch (error) {
       throw error
     }
   }
 
   // 搜尋公開伺服器
-  const searchPublicServers = async (query: string) => {
+  const fetchSearchPublicServers = async (query: string): Promise<any> => {
     try {
-      const { data: response } = await api.get(`/servers/search?q=${encodeURIComponent(query)}`)
-      if (response.status === 'success') {
-        return response.data
-      } else {
-        throw new Error(response.message)
-      }
+      const { data: response } = await api.get<APIResponse>(`/servers/search?q=${encodeURIComponent(query)}`)
+      const searchResults = handleAPIResponse(response, '搜尋公開伺服器')
+      return searchResults
     } catch (error) {
-      console.error('搜尋伺服器失敗:', error)
-      throw error
-    }
-  }
-
-  // 獲取推薦伺服器
-  const fetchFeaturedServers = async () => {
-    try {
-      const { data: response } = await api.get('/servers/featured')
-      if (response.status === 'success') {
-        return response.data
-      } else {
-        throw new Error(response.message)
-      }
-    } catch (error) {
-      console.error('獲取推薦伺服器失敗:', error)
       throw error
     }
   }
 
   // 加入公開伺服器
-  const joinPublicServer = async (serverId: string) => {
+  const fetchJoinPublicServer = async (serverId: string): Promise<Server> => {
     try {
-      const { data: response } = await api.post(`/servers/${serverId}/join`)
-
-      if (response.status === 'success') {
-        // 重新載入伺服器列表
-        await fetchServerList()
-        ElMessage.success('成功加入伺服器')
-        return response.data
-      } else {
-        if (response.displayable) {
-          ElMessage.error(response.message)
-        }
-        return null
+      const { data: response } = await api.post<APIResponse<Server>>(`/servers/${serverId}/join`)
+      const joinedServer = handleAPIResponse(response, '加入伺服器')
+      
+      // 將新的伺服器加入到列表中
+      const existingIndex = servers.value.findIndex(s => s.id === serverId)
+      if (existingIndex === -1) {
+        servers.value.push(joinedServer)
       }
-    } catch (error: any) {
-      console.error('加入伺服器失敗:', error)
-      ElMessage.error('加入伺服器失敗')
+      
+      return joinedServer
+    } catch (error) {
       throw error
     }
   }
@@ -260,11 +179,10 @@ export const useServerStore = defineStore('server', () => {
     getMemberByUserId,
     getOnlineMembers,
     getOfflineMembers,
-    createServer,
-    deleteServer,
-    leaveServer,
-    searchPublicServers,
-    fetchFeaturedServers,
-    joinPublicServer
+    fetchCreateServer,
+    fetchDeleteServer,
+    fetchLeaveServer,
+    fetchSearchPublicServers,
+    fetchJoinPublicServer
   }
 })

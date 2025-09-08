@@ -53,7 +53,7 @@
           </div>
 
           <!-- 預設推薦（未搜尋時） -->
-          <div v-else-if="!hasSearched" class="py-4">
+          <!-- <div v-else-if="!hasSearched" class="py-4">
             <h3 class="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wide">推薦伺服器</h3>
             <div class="grid grid-cols-1 gap-3">
               <div
@@ -82,7 +82,7 @@
                 </button>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <!-- 搜尋結果列表 -->
           <div v-else class="py-4">
@@ -129,23 +129,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- 底部操作 -->
-        <div class="flex justify-between mt-6 pt-4 border-t border-gray-700">
-          <button 
-            class="text-sm text-gray-400 hover:text-white transition-colors"
-            @click="refreshFeatured"
-          >
-            <i class="bi bi-arrow-clockwise mr-2"></i>
-            重新整理
-          </button>
-          <button 
-            class="px-4 py-2 text-gray-400 hover:text-white transition-colors" 
-            @click="visible = false"
-          >
-            關閉
-          </button>
         </div>
       </div>
     </el-dialog>
@@ -200,40 +183,6 @@ const initDialogContent = () => {
   isLoading.value = false
 }
 
-// 載入推薦伺服器
-const loadFeaturedServers = async () => {
-  try {
-    isLoading.value = true
-    const response = await serverStore.fetchFeaturedServers()
-    featuredServers.value = response.servers || []
-  } catch (error) {
-    console.error('載入推薦伺服器失敗:', error)
-    // 模擬資料作為後備
-    featuredServers.value = [
-      {
-        id: '1',
-        name: '遊戲愛好者',
-        description: '討論各種遊戲的社群，分享攻略和心得',
-        picture_url: '/placeholder-server1.jpg',
-        member_count: 1247,
-        is_joined: false,
-        owner_name: 'GameMaster',
-        created_at: 1640995200
-      },
-      {
-        id: '2',
-        name: '程式設計師',
-        description: '程式開發者的交流天地，分享技術和經驗',
-        picture_url: '/placeholder-server2.jpg',
-        member_count: 892,
-        is_joined: false,
-        owner_name: 'CodeGuru',
-        created_at: 1641081600
-      }
-    ]
-  }
-}
-
 // 搜尋伺服器
 const searchServers = async (query: string) => {
   if (!query.trim()) {
@@ -245,13 +194,16 @@ const searchServers = async (query: string) => {
   try {
     isLoading.value = true
     hasSearched.value = true
-    
-    const response = await serverStore.searchPublicServers(query)
-    searchResults.value = response.servers || []
+
+    const response = await serverStore.fetchSearchPublicServers(query)
+    if (response.servers) {
+      searchResults.value = response.servers as PublicServer[]
+    } else {
+      searchResults.value = []
+    }
   } catch (error) {
-    console.error('搜尋伺服器失敗:', error)
     searchResults.value = []
-    ElMessage.error('搜尋失敗，請稍後再試')
+    console.error(error)
   } finally {
     isLoading.value = false
   }
@@ -278,22 +230,20 @@ const handleSearch = () => {
 
 // 加入伺服器
 const joinServer = async (server: PublicServer) => {
-  const response = await serverStore.joinPublicServer(server.id)
-  if (response) {
+  try {
+    await serverStore.fetchJoinPublicServer(server.id)
+
     // 更新伺服器狀態
     server.is_joined = true
 
     // 關閉對話框
     visible.value = false
 
-    // 可選：自動跳轉到新加入的伺服器
+    // 跳轉到新加入的伺服器
     router.push(`/channels/${server.id}`)
+  } catch (error) {
+    console.error(error)
   }
-}
-
-// 重新整理推薦
-const refreshFeatured = () => {
-  loadFeaturedServers()
 }
 
 // 監聽 props 變化
@@ -303,7 +253,6 @@ watch(
     visible.value = newValue
     if (newValue) {
       initDialogContent()
-      // loadFeaturedServers()
     }
   }
 )

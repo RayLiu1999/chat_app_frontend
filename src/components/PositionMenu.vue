@@ -124,8 +124,6 @@
     })
   })
 
-  // 移除不需要的註釋
-
   onBeforeUnmount(() => {
     window.removeEventListener('keydown', (event) => {
       if (event.key === 'Escape') {

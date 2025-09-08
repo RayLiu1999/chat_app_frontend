@@ -24,8 +24,12 @@
   // 使用 Pinia Store
   const userStore = useUserStore()
 
-  onMounted(() => {
-    userStore.fetchUser()
+  onMounted(async () => {
+    try {
+      await userStore.fetchUser()
+    } catch (error) {
+      console.error('獲取使用者資料失敗:', error)
+    }
   })
 </script>
 

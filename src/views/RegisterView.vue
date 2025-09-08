@@ -11,40 +11,65 @@
     <div class="rounded-lg bg-gray-800 p-8 shadow-lg">
       <div class="w-100 mr-auto">
         <h2 class="mb-4 text-2xl font-bold text-white">建立新帳號</h2>
-        <form>
-          <div v-for="(item, index) in columns" :key="index" class="mb-4">
-            <label
-              class="mb-1 block flex items-center"
-              :for="item.name"
-              :class="item.error ? 'text-red-400' : 'text-gray-400'"
-            >
-              {{ item.label }}
-              <i
-                v-if="item.required && !item.error"
-                class="bi bi-asterisk"
-                style="font-size: 0.4rem; margin-left: 0.25rem; color: red"
-              ></i>
-              <span v-if="item.error" class="font-italic ml-1 text-red-400"
-                >- {{ item.errorMessage }}</span
-              >
-            </label>
-            <input
-              :id="item.name"
-              v-model="item.value"
-              class="w-full rounded bg-gray-700 p-2 text-white"
-              :name="item.name"
-              :type="item.type"
-              :placeholder="item.placeholder"
+        
+        <el-form
+          ref="formRef"
+          :model="formData"
+          :rules="rules"
+          label-position="top"
+          class="register-form"
+        >
+          <el-form-item label="電子郵件" prop="email">
+            <el-input
+              v-model="formData.email"
+              type="email"
+              placeholder="請輸入電子信箱"
+              size="large"
             />
-            <p class="text mt-1 text-sm text-gray-400">{{ item.remark }}</p>
-          </div>
-          <button
-            class="hover-bg-blue-700 mt-2 w-full rounded bg-blue-600 p-2 text-white"
-            @click="handleSubmit"
-          >
-            註冊
-          </button>
-        </form>
+          </el-form-item>
+          
+          <el-form-item label="顯示名稱" prop="nickname">
+            <el-input
+              v-model="formData.nickname"
+              placeholder="請輸入顯示名稱（可選）"
+              size="large"
+            />
+            <div class="form-hint">其他人會看見您的顯示名稱，可使用特殊字元和表情符號。</div>
+          </el-form-item>
+          
+          <el-form-item label="使用者名稱" prop="username">
+            <el-input
+              v-model="formData.username"
+              placeholder="請輸入使用者名稱"
+              size="large"
+            />
+            <div class="form-hint">請只使用數字、字母、底線 _，或英文句號 (.)。</div>
+          </el-form-item>
+          
+          <el-form-item label="密碼" prop="password">
+            <el-input
+              v-model="formData.password"
+              type="password"
+              placeholder="請輸入密碼"
+              size="large"
+              show-password
+            />
+            <div class="form-hint">密碼需包含至少6個字元。</div>
+          </el-form-item>
+          
+          <el-form-item>
+            <el-button
+              type="primary"
+              size="large"
+              style="width: 100%"
+              :loading="isLoading"
+              @click="handleSubmit"
+            >
+              註冊
+            </el-button>
+          </el-form-item>
+        </el-form>
+        
         <div class="mt-4 text-gray-400">
           <RouterLink class="text-blue-400" to="/login"> 已經有一個帳號？ </RouterLink>
         </div>
@@ -54,148 +79,118 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
+  import { ref, reactive } from 'vue'
   import { RouterLink, useRouter } from 'vue-router'
+  import { ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus'
+  import type { FormInstance } from 'element-plus'
   import api from '@/api/axios'
-  import { useResMsgStore } from '@/stores/res_msg'
+  import { createValidationRules } from '@/utils/validate'
+  import { useUserStore } from '@/stores/user'
 
   const router = useRouter()
-  const resMsgStore = useResMsgStore()
+  const formRef = ref<FormInstance>()
+  const isLoading = ref(false)
 
-  interface Column {
-    label: string
-    name: string
-    type: string
-    required: boolean
-    value: string
-    error: boolean
-    errorMessage: string
-    remark: string
-    placeholder: string
-  }
-
-  const columns = ref<Record<string, Column>>({
-    email: {
-      label: '電子郵件',
-      name: 'email',
-      type: 'email',
-      required: true,
-      value: '',
-      error: false,
-      errorMessage: '必要',
-      remark: '',
-      placeholder: '請輸入電子信箱',
-    },
-    nickname: {
-      label: '顯示名稱',
-      name: 'nickname',
-      type: 'text',
-      required: false,
-      value: '',
-      error: false,
-      errorMessage: '',
-      remark: '其他人會看見您的顯示名稱，可使用特殊字元和表情符號。',
-      placeholder: '請輸入顯示名稱（可選）',
-    },
-    username: {
-      label: '使用者名稱',
-      name: 'username',
-      type: 'text',
-      required: true,
-      value: '',
-      error: false,
-      errorMessage: '必要',
-      remark: '請只使用數字、字母、底線 _，或英文句號 (.)。',
-      placeholder: '請輸入使用者名稱',
-    },
-    password: {
-      label: '密碼',
-      name: 'password',
-      type: 'password',
-      required: true,
-      value: '',
-      error: false,
-      errorMessage: '必要',
-      remark: '密碼需包含至少6個字元。',
-      placeholder: '請輸入大於6位的密碼',
-    },
+  // 表單資料
+  const formData = reactive({
+    email: '',
+    nickname: '',
+    username: '',
+    password: ''
   })
 
-  const handleSubmit = async (event: Event) => {
-    event.preventDefault()
+  // 驗證規則
+  const rules = reactive({
+    email: [
+      createValidationRules.required('請輸入電子郵件'),
+      createValidationRules.email()
+    ],
+    nickname: [
+      createValidationRules.length(0, 32, '顯示名稱長度不能超過32個字符')
+    ],
+    username: [
+      createValidationRules.required('請輸入使用者名稱'),
+      createValidationRules.username()
+    ],
+    password: [
+      createValidationRules.required('請輸入密碼'),
+      createValidationRules.length(6, 50, '密碼長度需在6-50個字符之間')
+    ]
+  })
 
-    // 重置錯誤訊息
-    for (const key in columns.value) {
-      columns.value[key].error = false
-      columns.value[key].errorMessage = ''
-    }
-
-    let error = false
-
-    // 檢查必填欄位
-    for (const key in columns.value) {
-      if (columns.value[key].required && !columns.value[key].value) {
-        columns.value[key].error = true
-        columns.value[key].errorMessage = '此欄位為必填'
-        error = true
-      }
-    }
-
-    if (error) return
-
-    // 驗證email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (columns.value.email.value && !emailRegex.test(columns.value.email.value)) {
-      columns.value.email.error = true
-      columns.value.email.errorMessage = '請輸入有效的電子郵件'
-      return
-    }
-
-    // 驗證密碼
-    if (columns.value.password.value && columns.value.password.value.length < 6) {
-      columns.value.password.error = true
-      columns.value.password.errorMessage = '密碼長度需大於6位'
-      return
-    }
-
-    // 驗證使用者名稱
-    const usernameRegex = /^[a-zA-Z0-9_.]+$/
-    if (columns.value.username.value && !usernameRegex.test(columns.value.username.value)) {
-      columns.value.username.error = true
-      columns.value.username.errorMessage = '只能使用字母、數字、底線或句點'
-      return
-    }
+  const handleSubmit = async () => {
+    if (!formRef.value) return
 
     try {
-      // 註冊請求
-      await api
-        .post('/register', {
-          email: columns.value.email.value,
-          nickname: columns.value.nickname.value || columns.value.username.value, // 如果沒有填寫顯示名稱，使用使用者名稱
-          username: columns.value.username.value,
-          password: columns.value.password.value,
-        })
-        .then(() => {
-          // 註冊成功後，顯示成功訊息並導向登入頁
-          resMsgStore.showSuccess('註冊成功！請使用新帳號登入')
-          router.push({ path: '/login' })
-        })
-    } catch (error: any) {
-      // 錯誤處理由 axios 攔截器處理，這裡處理特定業務邏輯錯誤
-      if (error.response?.data) {
-        const apiResponse = error.response.data
+      // 驗證表單
+      const isValid = await formRef.value.validate()
+      if (!isValid) return
 
-        // 檢查特定錯誤並更新對應欄位的錯誤訊息
-        if (apiResponse.code === 3001) {
-          // 使用者名稱已存在
-          columns.value.username.error = true
-          columns.value.username.errorMessage = '此使用者名稱已被使用'
-        } else if (apiResponse.code === 3002) {
-          // 電子郵件已存在
-          columns.value.email.error = true
-          columns.value.email.errorMessage = '此電子郵件已被使用'
-        }
-      }
+      isLoading.value = true
+
+      // 註冊請求
+      const userStore = useUserStore()
+      await userStore.fetchRegister({
+        email: formData.email,
+        nickname: formData.nickname || formData.username,
+        username: formData.username,
+        password: formData.password,
+      })
+
+      // 註冊成功後，顯示成功訊息並導向登入頁
+      ElMessage.success('註冊成功！請使用新帳號登入')
+      router.push({ path: '/login' })
+    } catch (error: any) {
+      console.error('註冊失敗:', error)
+    } finally {
+      isLoading.value = false
     }
   }
 </script>
+
+<style lang="scss" scoped>
+.register-form {
+  :deep(.el-form-item__label) {
+    color: #d1d5db !important;
+    font-weight: 500;
+  }
+  
+  :deep(.el-input__wrapper) {
+    background-color: #374151 !important;
+    border: 1px solid transparent !important;
+    
+    &:hover {
+      border-color: transparent !important;
+    }
+    
+    &.is-focus {
+      border-color: #3b82f6 !important;
+    }
+  }
+  
+  :deep(.el-input__inner) {
+    color: white !important;
+    
+    &::placeholder {
+      color: #9ca3af !important;
+    }
+  }
+  
+  :deep(.el-button--primary) {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    
+    &:hover {
+      background-color: #1d4ed8 !important;
+      border-color: #1d4ed8 !important;
+    }
+  }
+}
+
+.form-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+</style>

@@ -1,34 +1,54 @@
 <template>
   <div class="bg-#0c0c31 relative w-60" @contextmenu="handleRightClick">
     <div>
-      <DropdownCp />
+      <ChannelDropdownMenu :server-id="currentServerId" />
       <div class="mt-4">
-        <VerticalMenu />
+        <ChannelVerticalMenu />
       </div>
     </div>
     <BottomBar />
   </div>
   <PositionMenu ref="menuRef">
     <template #item>
-      <li @click="createChannel">
+      <li @click="openCreateChannelDialog('text')">
         <i class="bi bi-hash mr-2"></i>建立文字頻道
       </li>
-      <li @click="createVoiceChannel">
-        <i class="bi bi-volume-up mr-2"></i>建立語音頻道
+      <li @click="openCreateChannelDialog('voice')">
+        <i class="bi bi-mic mr-2"></i>建立語音頻道
       </li>
-      <li @click="createCategory" class="danger">
+      <li @click="createCategory">
         <i class="bi bi-folder-plus mr-2"></i>建立類別
       </li>
     </template>
   </PositionMenu>
+  <!-- 建立頻道對話框 -->
+  <AddChannelDialog
+    :dialog-visible="addChannelDialogVisible"
+    :channel-type="selectedChannelType"
+    @update-visible="handleAddChannelDialog"
+    @create-channel="handleCreateChannel"
+  />
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import PositionMenu from './PositionMenu.vue'
+import type { ChannelAPI } from '@/types/api'
+import { useChannelStore } from '@/stores/channel'
+import { ElMessage } from 'element-plus'
 
+const route = useRoute()
+const router = useRouter()
+const channelStore = useChannelStore()
 const menuRef = ref<InstanceType<typeof PositionMenu> | null>(null)
+const addChannelDialogVisible = ref(false)
+const selectedChannelType = ref<'text' | 'voice'>('text')
 
+// 計算當前伺服器 ID
+const currentServerId = computed(() => route.params.server_id as string)
+
+// 右鍵點擊處理
 const handleRightClick = (event: MouseEvent) => {
   event.preventDefault()
   menuRef.value?.showMenu({
@@ -37,21 +57,37 @@ const handleRightClick = (event: MouseEvent) => {
   })
 }
 
-const createChannel = () => {
-  console.log('建立文字頻道')
-  // 這個功能現在由 VerticalMenu 處理
+// 處理建立頻道對話框顯示狀態
+const handleAddChannelDialog = (value: boolean) => {
+  addChannelDialogVisible.value = value
+}
+
+// 開啟建立頻道對話框
+const openCreateChannelDialog = (type: 'text' | 'voice') => {
+  selectedChannelType.value = type
+  addChannelDialogVisible.value = true
   menuRef.value?.hideMenu()
 }
 
-const createVoiceChannel = () => {
-  console.log('建立語音頻道')
-  // 這個功能現在由 VerticalMenu 處理
-  menuRef.value?.hideMenu()
+// 處理建立頻道
+const handleCreateChannel = async (channelData: ChannelAPI.Request.Create) => {
+  if (!currentServerId.value) return
+  
+  try {
+    const newChannel = await channelStore.fetchCreateChannel(currentServerId.value, channelData)
+    if (newChannel) {
+      addChannelDialogVisible.value = false
+      // 自動跳轉到新建的頻道
+      channelStore.setCurrentChannel(newChannel)
+      router.push(`/channels/${newChannel.server_id}/${newChannel.id}`)
+    }
+  } catch (error) {
+    console.error('建立頻道失敗:', error)
+  }
 }
 
 const createCategory = () => {
-  console.log('建立類別')
-  // TODO: 實現建立類別功能
+  ElMessage.info('敬請期待此功能！')
   menuRef.value?.hideMenu()
 }
 </script>
