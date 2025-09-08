@@ -1,18 +1,21 @@
 #!/bin/sh
 
-echo "🔍 Running Gemini AI code review..."
+echo "🔍 Running Gemini AI code review (雙重審查模式)..."
 
 # 建立 code_reviews 資料夾（如果不存在）
 mkdir -p code_reviews
 
 # 產生時間戳記檔名
 timestamp=$(date "+%Y%m%d_%H%M%S")
-review_file="code_reviews/review_${timestamp}.md"
+review_file1="code_reviews/review_${timestamp}_v1.md"
+review_file2="code_reviews/review_${timestamp}_v2.md"
 
 # 收集所有暫存的 TypeScript、Vue 和 JavaScript 檔案
-staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|vue|js|tsx|jsx)$')
+# 使用更安全的命令，避免 grep 失敗時的問題
+staged_files=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null | grep -E '\.(ts|vue|js|tsx|jsx)$' 2>/dev/null || true)
 
-if [ -z "$staged_files" ]; then
+# 檢查是否有檔案需要審查
+if [ -z "$staged_files" ] || [ "$staged_files" = "" ]; then
     echo "ℹ️ No code files to review"
     exit 0
 fi
@@ -20,35 +23,52 @@ fi
 echo "📋 Files to review:"
 echo "$staged_files"
 
-# 簡化的審查提示
-review_prompt="請用繁體中文簡短審查以下 Vue.js 專案的代碼變更，重點關注：
+# 第一個審查提示（重點關注邏輯和類型安全）
+review_prompt1="請用繁體中文審查以下 Vue.js 專案的代碼變更，並且幫我分重要程度等級(1-5)，內容重點關注：
 1. 重要的 bug 或邏輯錯誤
 2. TypeScript 類型安全問題
-3. 明顯的性能或安全問題
+3. 代碼結構和架構問題
 
 變更檔案：
 $staged_files
 
-請給出 1-3 個最重要的建議即可。"
+請給出具體的改進建議。"
 
-echo "🤖 Analyzing with Gemini AI..."
+# 第二個審查提示（重點關注性能和安全）
+review_prompt2="請用繁體中文審查以下 Vue.js 專案的代碼變更，並且幫我分重要程度等級(1-5)，內容重點關注：
+1. 明顯的性能問題
+2. 安全漏洞或風險
+3. 最佳實踐和代碼品質
 
-# 使用 Gemini CLI
-review_result=$(echo "$review_prompt" | gemini 2>&1)
-exit_code=$?
+變更檔案：
+$staged_files
 
-if [ $exit_code -ne 0 ]; then
-    echo "❌ Gemini review failed. Continue anyway? (y/N)"
+請給出具體的改進建議。"
+
+echo "🤖 Analyzing with Gemini AI (Review 1/2)..."
+
+# 第一份 review
+review_result1=$(echo "$review_prompt1" | gemini 2>&1)
+exit_code1=$?
+
+echo "🤖 Analyzing with Gemini AI (Review 2/2)..."
+
+# 第二份 review
+review_result2=$(echo "$review_prompt2" | gemini 2>&1)
+exit_code2=$?
+
+if [ $exit_code1 -ne 0 ] && [ $exit_code2 -ne 0 ]; then
+    echo "❌ Both Gemini reviews failed. Continue anyway? (y/N)"
     read -r response
     if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
         exit 1
     fi
 else
-    # 保存 review 結果到檔案
+    # 保存第一份 review 結果到檔案
     {
-        echo "# Code Review Report"
+        echo "# Code Review Report (版本 1 - 邏輯與類型)"
         echo "**時間**: $(date '+%Y-%m-%d %H:%M:%S')"
-        echo "**分支**: $(git branch --show-current)"
+        echo "**分支**: $(git branch --show-current 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
         echo ""
         echo "## 變更檔案"
         echo "\`\`\`"
@@ -56,17 +76,43 @@ else
         echo "\`\`\`"
         echo ""
         echo "## AI 審查結果"
-        echo "$review_result"
+        echo "$review_result1"
         echo ""
         echo "---"
-        echo "*此報告由 Gemini AI 自動生成*"
-    } > "$review_file"
-    
-    echo "✅ Review Result:"
-    echo "$review_result" | head -20  # 限制輸出行數
+        echo "*此報告由 Gemini AI 自動生成 (版本 1)*"
+    } > "$review_file1"
+
+    # 保存第二份 review 結果到檔案
+    {
+        echo "# Code Review Report (版本 2 - 性能與安全)"
+        echo "**時間**: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "**分支**: $(git branch --show-current 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
+        echo ""
+        echo "## 變更檔案"
+        echo "\`\`\`"
+        echo "$staged_files"
+        echo "\`\`\`"
+        echo ""
+        echo "## AI 審查結果"
+        echo "$review_result2"
+        echo ""
+        echo "---"
+        echo "*此報告由 Gemini AI 自動生成 (版本 2)*"
+    } > "$review_file2"
+
+    echo "✅ Review Results:"
     echo ""
-    echo "📝 Review saved to: $review_file"
+    echo "📋 Review 1 (邏輯與類型):"
+    echo "$review_result1" | head -10
+    echo ""
+    echo "📋 Review 2 (性能與安全):"
+    echo "$review_result2" | head -10
+    echo ""
+    echo "📝 Reviews saved to:"
+    echo "   - $review_file1"
+    echo "   - $review_file2"
     echo ""
 fi
 
 echo "✅ Commit approved"
+exit 0
