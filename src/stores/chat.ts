@@ -100,7 +100,12 @@ export const useChatStore = defineStore('chat', () => {
                 // 心跳回應，不需要特殊處理
                 break
               case 'new_message':
-                messages.value.push(wsMessage.data)
+                // 轉換 WebSocket 訊息格式為內部 Message 格式
+                const newMessage: Message = {
+                  ...wsMessage.data,
+                  timestamp: parseInt(wsMessage.data.timestamp)
+                }
+                messages.value.push(newMessage)
                 break
               case 'room_joined':
                 // ElMessage.success(wsMessage.data.message)
@@ -110,7 +115,12 @@ export const useChatStore = defineStore('chat', () => {
                 break
               case 'message_sent':
                 // ElMessage.success('訊息發送成功')
-                messages.value.push(wsMessage.data)
+                // 轉換 WebSocket 訊息格式為內部 Message 格式
+                const sentMessage: Message = {
+                  ...wsMessage.data,
+                  timestamp: parseInt(wsMessage.data.timestamp)
+                }
+                messages.value.push(sentMessage)
                 break
               case 'error':
                 ElMessage.error(`WebSocket 錯誤: ${wsMessage.data.message}`)
@@ -361,8 +371,11 @@ export const useChatStore = defineStore('chat', () => {
       const { data: response } = await api.get<APIResponse<Message[]>>('/dm_rooms/' + message.room_id + '/messages', { params })
       const data = handleAPIResponse(response, '獲取 DM 訊息')
 
+      // 確保 data 是陣列
+      const messageArray = Array.isArray(data) ? data : []
+
       // 依序加入
-      messages.value.push(...data)
+      messages.value.push(...messageArray)
 
       // 去重
       messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
@@ -384,8 +397,11 @@ export const useChatStore = defineStore('chat', () => {
       const { data: response } = await api.get<APIResponse<Message[]>>('/channels/' + message.room_id + '/messages', { params })
       const data = handleAPIResponse(response, '獲取頻道訊息')
 
+      // 確保 data 是陣列
+      const messageArray = Array.isArray(data) ? data : []
+
       // 依序加入
-      messages.value.push(...data)
+      messages.value.push(...messageArray)
 
       // 去重
       messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)

@@ -14,7 +14,13 @@
       <div class="flex space-x-4">
         <button class="hover:bg-#4d4e65f7 hover:text weak-text rounded px-1" :class="{ 'bg-#434459f7 hover:bg-#4d4e65f7 text': selectedStatus === 'online' }" @click="selectedStatus = 'online'">線上</button>
         <button class="hover:bg-#4d4e65f7 hover:text weak-text rounded px-1" :class="{ 'bg-#434459f7 hover:bg-#4d4e65f7 text': selectedStatus === 'all' }" @click="selectedStatus = 'all'">所有</button>
-        <button class="hover:bg-#4d4e65f7 hover:text weak-text rounded px-1" :class="{ 'bg-#434459f7 hover:bg-#4d4e65f7 text': selectedStatus === 'pending' }" @click="selectedStatus = 'pending'">等待中</button>
+        <button class="hover:bg-#4d4e65f7 hover:text weak-text rounded px-1" :class="{ 'bg-#434459f7 hover:bg-#4d4e65f7 text': selectedStatus === 'pendingReceived' }" @click="selectedStatus = 'pendingReceived'">
+          待接收請求
+          <span v-if="friendStore.pendingFriends.received?.length > 0" class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">
+            {{ friendStore.pendingFriends.received.length }}
+          </span>
+        </button>
+        <button class="hover:bg-#4d4e65f7 hover:text weak-text rounded px-1" :class="{ 'bg-#434459f7 hover:bg-#4d4e65f7 text': selectedStatus === 'pendingSent' }" @click="selectedStatus = 'pendingSent'">已寄出請求</button>
         <button class="hover:bg-#4d4e65f7 hover:text weak-text rounded px-1" :class="{ 'bg-#434459f7 hover:bg-#4d4e65f7 text': selectedStatus === 'blocked' }" @click="selectedStatus = 'blocked'">已封鎖</button>
         <button class="bg-#513a9a hover:bg-#5f4d9c text ml-auto rounded px-4 py-1" @click="selectedStatus = 'addFriend'">{{ selectedStatusList['addFriend'] }}</button>
       </div>
@@ -31,7 +37,9 @@
     <!-- Friends List -->
     <el-scrollbar :always="true">
       <div class="flex-1 overflow-y-auto p-4">
-        <div v-if="selectedStatus !== 'addFriend'" class="weak-text mb-2">{{ selectedStatusList[selectedStatus] }} - {{ filteredFriends.length }}</div>
+        <div v-if="selectedStatus !== 'addFriend'" class="weak-text mb-2">
+          {{ selectedStatusList[selectedStatus] }} - {{ getStatusCount(selectedStatus) }}
+        </div>
         
         <!-- 新增好友界面 -->
         <div v-if="selectedStatus === 'addFriend'" class="space-y-4">
@@ -69,39 +77,64 @@
         <div v-else class="space-y-4">
           <!-- Friend Item -->
           <div
-            v-for="friend in filteredFriends"
-            :key="friend.id"
+            v-for="item in filteredFriends"
+            :key="getItemKey(item)"
             class="flex items-center justify-between rounded p-2 transition hover:bg-#303457 dark:hover:bg-gray-700 cursor-pointer"
-            @click="goToChat(friend)"
+            @click="handleItemClick(item)"
           >
             <div class="flex items-center space-x-4">
-              <AvatarImage :src="friend.picture_url" alt="User" size="md" :status="friend.is_online ? 'online' : 'offline'" />
+              <AvatarImage 
+                :src="item.picture_url" 
+                alt="User" 
+                size="md" 
+                :status="getItemStatus(item)" 
+              />
               <div>
-                <div class="text">{{ friend.nickname }}</div>
-                <div class="weak-text text-sm">{{ friend.is_online ? '線上' : '離線' }}</div>
+                <div class="text">{{ item.nickname }}</div>
+                <div class="weak-text text-sm">{{ getItemSubtext(item) }}</div>
               </div>
             </div>
 
-            <!-- 等待中好友請求的接受/拒絕按鈕 -->
-            <div v-if="friend.status === 'pending'" class="flex space-x-2">
-              <el-tooltip content="接受好友請求" placement="top" :show-after="300">
-                <button @click="acceptFriendRequest(friend.id)" class="bg-green-600 hover:bg-green-700 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center">
-                  <i class="bi bi-check"></i>
-                </button>
-              </el-tooltip>
-              <el-tooltip content="拒絕好友請求" placement="top" :show-after="300">
-                <button @click="rejectFriendRequest(friend.id)" class="bg-red-600 hover:bg-red-700 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center">
-                  <i class="bi bi-x"></i>
+            <!-- 待處理好友請求的按鈕 -->
+            <div v-if="isFriendRequest(item)" class="flex space-x-2">
+              <!-- 接收到的請求顯示接受/拒絕按鈕 -->
+              <template v-if="item.requestType === 'received'">
+                <el-tooltip content="接受好友請求" placement="top" :show-after="300">
+                  <button @click.stop="acceptFriendRequest(item.request_id)" class="bg-green-600 hover:bg-green-700 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center">
+                    <i class="bi bi-check"></i>
+                  </button>
+                </el-tooltip>
+                <el-tooltip content="拒絕好友請求" placement="top" :show-after="300">
+                  <button @click.stop="rejectFriendRequest(item.request_id)" class="bg-red-600 hover:bg-red-700 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </el-tooltip>
+              </template>
+              <!-- 發送的請求顯示取消按鈕 -->
+              <template v-else>
+                <el-tooltip content="取消好友請求" placement="top" :show-after="300">
+                  <button @click.stop="cancelFriendRequest(item.request_id)" class="bg-gray-600 hover:bg-gray-700 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </el-tooltip>
+              </template>
+            </div>
+
+            <!-- 封鎖用戶的解除封鎖按鈕 -->
+            <div v-else-if="isBlockedUser(item)" class="flex space-x-2">
+              <el-tooltip content="解除封鎖" placement="top" :show-after="300">
+                <button @click.stop="unblockUser()" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1 w-7 h-7 flex items-center justify-center">
+                  <i class="bi bi-unlock"></i>
                 </button>
               </el-tooltip>
             </div>
 
-            <!-- 好友功能按鈕（非等待中）-->
-            <div v-else class="flex items-center space-x-2 transition">
+            <!-- 好友功能按鈕 -->
+            <div v-else-if="isFriend(item)" class="flex items-center space-x-2 transition">
               <!-- 傳送訊息按鈕 -->
               <el-tooltip content="傳送訊息" placement="top" :show-after="300">
                 <button
-                  @click.stop="goToChat(friend)"
+                  @click.stop="goToChat(item)"
                   class="bg-#080929 hover:bg-#080929 text rounded-full p-1 w-7 h-7 flex items-center justify-center group"
                 >
                   <i class="bi bi-chat-fill group-hover:text-white transition-colors"></i>
@@ -109,7 +142,7 @@
               </el-tooltip>
               <el-tooltip content="更多" placement="top" :show-after="300">
               <button 
-                @click.stop="handleSelectClick($event)"
+                @click.stop="handleSelectClick($event, item)"
                 class="bg-#080929 hover:bg-#080929 text rounded-full p-1 w-7 h-7 flex items-center justify-center group"
               >
                 <i class="bi bi-three-dots-vertical group-hover:text-white transition-colors"></i>
@@ -122,9 +155,10 @@
     </el-scrollbar>
     <PositionMenu ref="menuRef">
       <template #item>
-        <li @click="">開始語音通話</li>
-        <li @click="">開始視訊通話</li>
-        <li @click="" class="danger">移除好友</li>
+        <li v-if="selectedFriend && isFriend(selectedFriend)" @click="startVoiceCall(selectedFriend)">開始語音通話</li>
+        <li v-if="selectedFriend && isFriend(selectedFriend)" @click="startVideoCall(selectedFriend)">開始視訊通話</li>
+        <li v-if="selectedFriend && isFriend(selectedFriend)" @click="blockUser()" class="danger">封鎖用戶</li>
+        <li v-if="selectedFriend && isFriend(selectedFriend)" @click="removeFriend()" class="danger">移除好友</li>
       </template>
     </PositionMenu>
     
@@ -144,22 +178,24 @@
   import { computed, ref, onMounted, reactive } from 'vue'
   import { useFriendStore } from '@/stores/friend'
   import { useChatStore } from '@/stores/chat'
-  import type { User } from '@/types/auth'
+  import type { Friend, FriendRequest, BlockedUser } from '@/types/auth'
   import { ElMessage, ElForm, ElFormItem, ElInput, ElButton } from 'element-plus'
   import type { FormInstance } from 'element-plus'
   import { createValidationRules } from '@/utils/validate'
   import ConfirmDialog from './dialogs/ConfirmDialog.vue'
   import { useRouter } from 'vue-router'
   import PositionMenu from './PositionMenu.vue'
-  
+  import { ymd } from '@/utils/time'
+
   const router = useRouter()
 
-  type StatusKey = 'all' | 'online' | 'pending' | 'blocked' | 'addFriend'
+  type StatusKey = 'all' | 'online' | 'pendingSent' | 'pendingReceived' | 'blocked' | 'addFriend'
   
   const selectedStatusList: Record<StatusKey, string> = {
     "all" : "所有",
     "online" : "線上",
-    "pending" : "等待回覆中",
+    "pendingSent" : "已寄出請求",
+    "pendingReceived" : "待接收請求",
     "blocked" : "已封鎖",
     "addFriend" : "新增好友"
   }
@@ -196,28 +232,33 @@
     confirmText: '確認',
     onConfirm: () => {}
   })
+  
+  // 選中的好友項目（用於更多選單）
+  const selectedFriend = ref<Friend | FriendRequest | BlockedUser | null>(null)
+  
   const friendStore = useFriendStore()
   const chatStore = useChatStore()
-  const friends = computed(() => friendStore.friends)
+  
+  // 根據選擇的狀態返回對應的資料
   const filteredFriends = computed(() => {
-    // 確保 friends.value 是陣列
-    const friendsArray = Array.isArray(friends.value) ? friends.value : []
-    
-    // 根據選擇的狀態過濾好友列表
-    if (selectedStatus.value === 'all') {
-      // 全部狀態不包含等待中和已封鎖的好友
-      return friendsArray.filter((friend: User) => 
-        friend.status !== 'pending' && friend.status !== 'blocked'
-      )
-    } else if (selectedStatus.value === 'online') {
-      // 線上狀態
-      return friendsArray.filter((friend: User) => friend.is_online === true)
-    } else if (selectedStatus.value === 'pending' || selectedStatus.value === 'blocked') {
-      // 等待回覆中和已封鎖狀態獨立計算
-      return friendsArray.filter((friend: User) => friend.status === selectedStatus.value)
-    } else {
-      // 其他狀態
-      return friendsArray.filter((friend: User) => friend.status === selectedStatus.value)
+    switch (selectedStatus.value) {
+      case 'all':
+        // 所有已接受的好友
+        return friendStore.friends || []
+      case 'online':
+        // 線上好友
+        return friendStore.friends?.filter(friend => friend.is_online) || []
+      case 'pendingReceived':
+        // 接收到的好友請求
+        return friendStore.pendingFriends.received?.map(req => ({ ...req, requestType: 'received' as const })) || []
+      case 'pendingSent':
+        // 發送的好友請求
+        return friendStore.pendingFriends.sent?.map(req => ({ ...req, requestType: 'sent' as const })) || []
+      case 'blocked':
+        // 已封鎖用戶
+        return friendStore.blockedUsers || []
+      default:
+        return []
     }
   })
 
@@ -227,9 +268,14 @@
 
   onMounted(async () => {
     try {
-      await friendStore.fetchFriends()
+      // 載入所有相關資料
+      await Promise.all([
+        friendStore.fetchFriends(),
+        friendStore.fetchPendingFriends(),
+        friendStore.fetchBlockedUsers()
+      ])
     } catch (error) {
-      console.error('載入好友列表失敗:', error)
+      console.error('載入好友資料失敗:', error)
     }
   })
 
@@ -257,26 +303,41 @@
   }
   
   // 接受好友請求
-  const acceptFriendRequest = async (friendId: string) => {
+  const acceptFriendRequest = async (requestId: string) => {
     try {
-      await friendStore.fetchAcceptFriendRequest(friendId)
+      await friendStore.fetchAcceptFriendRequest(requestId)
+      ElMessage.success('已接受好友請求')
     } catch (error) {
       console.error('接受好友請求失敗:', error)
     }
   }
   
   // 拒絕好友請求
-  const rejectFriendRequest = async (friendId: string) => {
+  const rejectFriendRequest = async (requestId: string) => {
     try {
-      await friendStore.fetchRejectFriendRequest(friendId)
+      await friendStore.fetchRejectFriendRequest(requestId)
+      ElMessage.success('已拒絕好友請求')
     } catch (error) {
       console.error('拒絕好友請求失敗:', error)
     }
   }
 
-  const handleSelectClick = (event: MouseEvent) => {
+  // 取消好友請求
+  const cancelFriendRequest = async (requestId: string) => {
+    try {
+      await friendStore.fetchCancelFriendRequest(requestId)
+      ElMessage.success('已取消好友請求')
+    } catch (error) {
+      console.error('取消好友請求失敗:', error)
+    }
+  }
+
+  const handleSelectClick = (event: MouseEvent, item: Friend | FriendRequest | BlockedUser) => {
     // 隱藏tooltip
     tooltipDisable.value = true
+    
+    // 記住選中的項目
+    selectedFriend.value = item
 
     // 阻止事件冒泡
     event.stopPropagation()
@@ -291,7 +352,7 @@
  * 開始聊天
  * @param friend 好友物件
  */
-async function goToChat(friend: User) {
+async function goToChat(friend: Friend) {
   try {
     // 建立DM聊天室
     const dmRoom = await chatStore.fetchCreateDMRoom({ chat_with_user_id: friend.id })
@@ -306,56 +367,170 @@ async function goToChat(friend: User) {
 }
 
 /**
- * 處理更多下拉選單事件
- * @param command 選單指令
- * @param friend 好友物件
- */
-function handleMoreCommand(command: string, friend: User) {
-  switch (command) {
-    case 'voice':
-      startVoiceCall(friend);
-      break;
-    case 'video':
-      startVideoCall(friend);
-      break;
-    case 'remove':
-      removeFriend(friend);
-      break;
-  }
-}
-
-/**
  * 開始語音通話
  */
-function startVoiceCall(friend: User) {
+function startVoiceCall(friend: Friend) {
   ElMessage.success(`與「${friend.nickname}」開始語音通話（待實作）`);
 }
 
 /**
  * 開始視訊通話
  */
-function startVideoCall(friend: User) {
+function startVideoCall(friend: Friend) {
   ElMessage.success(`與「${friend.nickname}」開始視訊通話（待實作）`);
 }
 
 /**
  * 移除好友
  */
-function removeFriend(friend: User) {
+function removeFriend() {
+  if (!selectedFriend.value || !('id' in selectedFriend.value)) return
+  
+  const friend = selectedFriend.value as Friend
   confirmData.value = {
     title: '移除好友',
     message: `確定要移除好友「${friend.nickname}」嗎？`,
     type: 'warning',
     confirmText: '確定',
-    onConfirm: () => {
-      // TODO: 呼叫API實際移除好友
-      ElMessage.info('已移除好友（待串接API）');
+    onConfirm: async () => {
+      try {
+        await friendStore.fetchRemoveFriend(friend.id)
+        ElMessage.success('好友已移除')
+      } catch (error) {
+        console.error('移除好友失敗:', error)
+      }
     }
   }
   showConfirmDialog.value = true
 }
 
-// ...原有export等內容
+/**
+ * 封鎖用戶
+ */
+function blockUser() {
+  if (!selectedFriend.value) return
+  
+  const userId = 'id' in selectedFriend.value ? selectedFriend.value.id : selectedFriend.value.user_id
+  const nickname = selectedFriend.value.nickname
+  
+  confirmData.value = {
+    title: '封鎖用戶',
+    message: `確定要封鎖用戶「${nickname}」嗎？`,
+    type: 'warning',
+    confirmText: '封鎖',
+    onConfirm: async () => {
+      try {
+        await friendStore.fetchBlockUser(userId)
+        ElMessage.success('用戶已封鎖')
+      } catch (error) {
+        console.error('封鎖用戶失敗:', error)
+      }
+    }
+  }
+  showConfirmDialog.value = true
+}
+
+/**
+ * 解除封鎖
+ */
+function unblockUser() {
+  if (!selectedFriend.value || !('user_id' in selectedFriend.value)) return
+  
+  const blockedUser = selectedFriend.value as BlockedUser
+  confirmData.value = {
+    title: '解除封鎖',
+    message: `確定要解除封鎖用戶「${blockedUser.nickname}」嗎？`,
+    type: 'info',
+    confirmText: '解除封鎖',
+    onConfirm: async () => {
+      try {
+        await friendStore.fetchUnblockUser(blockedUser.user_id)
+        ElMessage.success('已解除封鎖')
+      } catch (error) {
+        console.error('解除封鎖失敗:', error)
+      }
+    }
+  }
+  showConfirmDialog.value = true
+}
+
+// 判斷是否為好友請求項目
+function isFriendRequest(item: any): item is FriendRequest & { requestType: 'sent' | 'received' } {
+  return 'request_id' in item && 'requestType' in item
+}
+
+// 判斷是否為封鎖用戶項目
+function isBlockedUser(item: any): item is BlockedUser {
+  return 'user_id' in item && 'blocked_at' in item
+}
+
+// 判斷是否為好友項目
+function isFriend(item: any): item is Friend {
+  return 'id' in item && 'status' in item && item.status === 'accepted'
+}
+
+// 獲取項目的唯一鍵值
+function getItemKey(item: Friend | FriendRequest | BlockedUser | any): string {
+  if (isFriendRequest(item)) {
+    return `request-${item.request_id}`
+  } else if (isBlockedUser(item)) {
+    return `blocked-${item.user_id}`
+  } else if (isFriend(item)) {
+    return `friend-${item.id}`
+  } else {
+    return `unknown-${Math.random()}`
+  }
+}
+
+// 獲取項目的線上狀態
+function getItemStatus(item: Friend | FriendRequest | BlockedUser | any): string {
+  if (isFriend(item)) {
+    return item.is_online ? 'online' : 'offline'
+  }
+  return 'offline'
+}
+
+// 獲取項目的子文字
+function getItemSubtext(item: Friend | FriendRequest | BlockedUser | any): string {
+  if (isFriend(item)) {
+    return item.is_online ? '線上' : '離線'
+  } else if (isFriendRequest(item)) {
+    if (item.requestType === 'sent') {
+      return `發送於 ${ymd(item.sent_at)}`
+    } else {
+      return `接收於 ${ymd(item.sent_at)}`
+    }
+  } else if (isBlockedUser(item)) {
+    return `封鎖於 ${ymd(item.blocked_at)}`
+  }
+  return ''
+}
+
+// 處理項目點擊事件
+function handleItemClick(item: Friend | FriendRequest | BlockedUser | any) {
+  if (isFriend(item)) {
+    goToChat(item)
+  }
+  // 其他類型的項目不做任何動作
+}
+
+// 獲取狀態對應的數量
+function getStatusCount(status: StatusKey): number {
+  switch (status) {
+    case 'all':
+      return friendStore.friends?.length || 0
+    case 'online':
+      return friendStore.friends?.filter(friend => friend.is_online).length || 0
+    case 'pendingReceived':
+      return friendStore.pendingFriends.received?.length || 0
+    case 'pendingSent':
+      return friendStore.pendingFriends.sent?.length || 0
+    case 'blocked':
+      return friendStore.blockedUsers?.length || 0
+    default:
+      return 0
+  }
+}
 </script>
 
 <style lang="scss" scoped>

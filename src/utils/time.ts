@@ -39,14 +39,15 @@ const formatTimestamp = (timestamp: number) => {
 
 // YYYY/M/D
 const ymd = (ts: number) => {
-  const d = new Date(ts)
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+  const d = new Date(ts);
+  // 在這裡加 1
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
 // YYYY/M/D HH:MM
 const ymdHm = (ts: number) => {
   const d = new Date(ts)
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
 }
 
 // YYYY年M月D日

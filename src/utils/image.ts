@@ -1,4 +1,4 @@
-import defaultAvatar from '@/assets/images/user1.jpg'
+import defaultAvatar from '@/assets/images/user.jpg'
 
 // 圖片載入失敗時替換為預設頭像，並移除 onerror 以避免重複觸發閃爍
 const onImgError = (e: Event) => {
