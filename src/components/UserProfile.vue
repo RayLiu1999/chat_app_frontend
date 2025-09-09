@@ -3,7 +3,7 @@
   <div class="bg-#080924 w-60 p-4">
     <div class="flex flex-col items-center">
       <div class="default-image size-10">
-        <img alt="User" class="mb-4 size-10" src="@/assets/images/user1.jpg" />
+        <img alt="User" class="mb-4 size-10" src="@/assets/images/user.jpg" />
       </div>
       <div class="text-center">
         <div class="weak-text">ホタル</div>

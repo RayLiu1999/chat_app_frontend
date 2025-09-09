@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { onImgError } from '@/utils/image'
-import defaultAvatar from '@/assets/images/user1.jpg'
+import defaultAvatar from '@/assets/images/user.jpg'
 
 /* -------- props -------- */
 interface Props {

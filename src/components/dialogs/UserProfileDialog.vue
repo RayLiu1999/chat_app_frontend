@@ -6,14 +6,14 @@
           <img
             alt="Background image with hands and a claw"
             class="h-full w-full rounded-t-lg object-cover"
-            src="@/assets/images/GTFy9B3aQAAz2JI.jpg"
+            src="@/assets/images/banner.jpg"
           />
         </div>
         <div class="bottom--48px absolute left-4 flex items-center space-x-2">
           <img
             alt="Profile picture"
             class="w-80px h-80px border-#0e0b17 rounded-full border-4"
-            src="@/assets/images/user1.jpg"
+            src="@/assets/images/user.jpg"
           />
         </div>
       </div>
@@ -60,7 +60,7 @@
               src="https://placehold.co/40x40"
               width="40"
             />
-            <span> 霹靂將軍 </span>
+            <span> 繩匠 </span>
           </div>
           <div class="flex items-center space-x-2">
             <img
@@ -68,7 +68,7 @@
               class="size-12 rounded-full"
               src="https://placehold.co/40x40"
             />
-            <span> Aluo </span>
+            <span> 漂泊者 </span>
           </div>
           <div class="flex items-center space-x-2">
             <img
@@ -78,7 +78,7 @@
               src="https://placehold.co/40x40"
               width="40"
             />
-            <span> +0 </span>
+            <span> 旅行者 </span>
           </div>
           <div class="flex items-center space-x-2">
             <img
@@ -88,7 +88,7 @@
               src="https://placehold.co/40x40"
               width="40"
             />
-            <span> 花樂_Pinky </span>
+            <span> 開拓者 </span>
           </div>
           <div class="flex items-center space-x-2">
             <img
@@ -98,7 +98,7 @@
               src="https://placehold.co/40x40"
               width="40"
             />
-            <span> Dami-瑪潔 </span>
+            <span> 指揮官 </span>
           </div>
         </div>
       </div>
