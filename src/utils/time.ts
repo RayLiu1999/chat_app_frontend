@@ -40,14 +40,19 @@ const formatTimestamp = (timestamp: number) => {
 // YYYY/M/D
 const ymd = (ts: number) => {
   const d = new Date(ts);
-  // 在這裡加 1
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-}
+  const month = padZero(d.getMonth() + 1);
+  const day = padZero(d.getDate());
+  return `${d.getFullYear()}-${month}-${day}`;
+};
 
 // YYYY/M/D HH:MM
 const ymdHm = (ts: number) => {
   const d = new Date(ts)
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
+  const month = padZero(d.getMonth() + 1);
+  const day = padZero(d.getDate());
+  const hours = padZero(d.getHours());
+  const minutes = padZero(d.getMinutes());
+  return `${d.getFullYear()}-${month}-${day} ${hours}:${minutes}`
 }
 
 // YYYY年M月D日
@@ -55,5 +60,7 @@ const formatDateHeader = (ts: number): string => {
   const d = new Date(ts)
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
 }
+
+const padZero = (num: number) => num.toString().padStart(2, '0');
 
 export { formatTimestamp, ymd, ymdHm, formatDateHeader }
