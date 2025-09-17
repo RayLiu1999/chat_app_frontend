@@ -3,9 +3,9 @@
     <RouterLink class="text-white" to="/channels">
       <div class="absolute left-8 top-8 flex items-center">
         <span class="mr-1">
-          <i class="bi bi-chat-dots-fill" style="font-size: 1.5rem; color: white"></i>
+          <img src="@/assets/images/logo.png" alt="Chat App Logo" class="h-10 w-10" />
         </span>
-        <span class="text-2xl">Chat App</span>
+        <span class="text-2xl font-bold">Chat App</span>
       </div>
     </RouterLink>
     <div class="rounded-lg bg-gray-800 p-8 shadow-lg">

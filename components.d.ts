@@ -50,7 +50,6 @@ declare module 'vue' {
     UserProfile: typeof import('./src/components/UserProfile.vue')['default']
     UserProfileDialog: typeof import('./src/components/dialogs/UserProfileDialog.vue')['default']
     UserProfileSetting: typeof import('./src/components/UserProfileSetting.vue')['default']
-    VerticalMenu: typeof import('./src/components/ChannelVerticalMenu.vue')['default']
     VoiceCallDialog: typeof import('./src/components/VoiceCallDialog.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
   }

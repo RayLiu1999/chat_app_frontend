@@ -10,7 +10,7 @@
                 class="bg-#5865f2 flex size-12 cursor-pointer items-center justify-center rounded-full"
               >
                 <span class="font-size-6 color-white">
-                  <i class="bi bi-chat-dots-fill"></i>
+                  <img src="@/assets/images/logo.png" alt="Chat App Logo" class="h-10 w-10" />
                 </span>
               </span>
             </button>
