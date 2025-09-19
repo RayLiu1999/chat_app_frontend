@@ -3,6 +3,7 @@ import { useUserStore } from '@/stores/user'
 import { useResMsgStore } from '@/stores/res_msg'
 import type { APIResponse } from '@/types/api'
 import { ElMessage } from 'element-plus'
+import { getCookie } from '@/utils/cookie'
 
 const API_DOMAIN = import.meta.env.VITE_API_DOMAIN
 let API_URL = ''
@@ -20,7 +21,7 @@ const needCookieRoutes = ['/login', '/logout', '/refresh_token']
 
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
-  
+
 // 用來發送失敗的請求
 function onRefreshed(token: string) {
   refreshSubscribers.forEach((callback) => callback(token))
@@ -47,6 +48,15 @@ api.interceptors.request.use(
     // 如果不是 FormData，才手動設置 Content-Type
     if (!isFormData) {
       config.headers['Content-Type'] = 'application/json'
+    }
+
+    // 只有在 POST、PUT、DELETE 請求才加入 CSRF token
+    if (['post', 'put', 'delete'].includes(config.method?.toLowerCase() ?? '')) {
+      const csrfToken = getCookie('csrf_token')
+      if (csrfToken) {
+        config.headers['X-CSRF-TOKEN'] = csrfToken
+        config.withCredentials = true
+      }
     }
 
     // 判斷是否需要權限驗證的邏輯
@@ -121,7 +131,7 @@ api.interceptors.response.use(
       // 處理 API 錯誤響應
       if (response.data) {
         const apiResponse = response.data as APIResponse
-        
+
         // 根據 API 回應處理錯誤
         if (apiResponse.status === 'error') {
           // 系統錯誤訊息(統一在這邊顯示)
