@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import type { Message, DMRoom } from '@/types/chat'
 import type { MessageAPI, DMRoomAPI, APIResponse } from '@/types/api'
@@ -14,11 +14,13 @@ export const useChatStore = defineStore('chat', () => {
 
   // 資料
   const channels = ref(['general', 'random', 'help'])
-  const messages = ref<Message[]>([])
+  const messageCache = ref<Record<string, Message[]>>({}) // 訊息快取
+  const messages = computed(() => messageCache.value[currentRoomId.value] || [])
   const dmRooms = ref<DMRoom[]>([])
 
   // 當前狀態
   const currentChannel = ref('general')
+  const currentRoomId = ref<string>('') // 當前房間 ID
   const API_DOMAIN = import.meta.env.VITE_API_DOMAIN
 
   // WebSocket
@@ -99,9 +101,14 @@ export const useChatStore = defineStore('chat', () => {
               case 'pong':
                 // 心跳回應，不需要特殊處理
                 break
-              case 'new_message':
-                messages.value.push(wsMessage.data)
+              case 'new_message': {
+                const newMessage: Message = wsMessage.data
+                const roomId = newMessage.room_id
+                if (messageCache.value[roomId]) {
+                  messageCache.value[roomId].push(newMessage)
+                }
                 break
+              }
               case 'room_joined':
                 // ElMessage.success(wsMessage.data.message)
                 break
@@ -256,6 +263,9 @@ export const useChatStore = defineStore('chat', () => {
     }
 
     try {
+      // 更新當前房間 ID
+      currentRoomId.value = payload.room_id
+
       const request: ClientToServer.JoinRoom = {
         action: 'join_room',
         data: payload,
@@ -354,6 +364,11 @@ export const useChatStore = defineStore('chat', () => {
   // 取得DM聊天室訊息
   const fetchDMMessages = async (message: MessageAPI.Request.GetMessages): Promise<void> => {
     try {
+      // 如果快取中已有訊息，且不是為了獲取舊訊息，則不重新獲取
+      if (messageCache.value[message.room_id] && !message.message_id) {
+        return
+      }
+
       const params: { before?: string; limit: number } = { limit: message.limit }
       if (message.message_id) {
         params.before = message.message_id
@@ -361,14 +376,18 @@ export const useChatStore = defineStore('chat', () => {
       const { data: response } = await api.get<APIResponse<Message[]>>('/dm_rooms/' + message.room_id + '/messages', { params })
       const data = handleAPIResponse(response, '獲取 DM 訊息')
 
-      // 依序加入
-      messages.value.push(...data)
+      // 初始化快取
+      if (!messageCache.value[message.room_id]) {
+        messageCache.value[message.room_id] = []
+      }
 
-      // 去重
-      messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
+      // 將新訊息加入快取
+      const existingMessages = messageCache.value[message.room_id]
+      const newMessages = data.filter(d => !existingMessages.some(e => e.id === d.id))
+      messageCache.value[message.room_id].push(...newMessages)
 
       // 排序
-      messages.value.sort((a, b) => a.timestamp - b.timestamp)
+      messageCache.value[message.room_id].sort((a, b) => a.timestamp - b.timestamp)
     } catch (error) {
       throw error
     }
@@ -377,6 +396,11 @@ export const useChatStore = defineStore('chat', () => {
   // 取得頻道訊息
   const fetchChannelMessages = async (message: MessageAPI.Request.GetMessages): Promise<void> => {
     try {
+      // 如果快取中已有訊息，且不是為了獲取舊訊息，則不重新獲取
+      if (messageCache.value[message.room_id] && !message.message_id) {
+        return
+      }
+
       const params: { before?: string; limit: number } = { limit: message.limit }
       if (message.message_id) {
         params.before = message.message_id
@@ -384,22 +408,28 @@ export const useChatStore = defineStore('chat', () => {
       const { data: response } = await api.get<APIResponse<Message[]>>('/channels/' + message.room_id + '/messages', { params })
       const data = handleAPIResponse(response, '獲取頻道訊息')
 
-      // 依序加入
-      messages.value.push(...data)
+      // 初始化快取
+      if (!messageCache.value[message.room_id]) {
+        messageCache.value[message.room_id] = []
+      }
 
-      // 去重
-      messages.value = messages.value.filter((item, index) => messages.value.findIndex((t) => t.id === item.id) === index)
+      // 將新訊息加入快取
+      const existingMessages = messageCache.value[message.room_id]
+      const newMessages = data.filter(d => !existingMessages.some(e => e.id === d.id))
+      messageCache.value[message.room_id].push(...newMessages)
 
       // 排序
-      messages.value.sort((a, b) => a.timestamp - b.timestamp)
+      messageCache.value[message.room_id].sort((a, b) => a.timestamp - b.timestamp)
     } catch (error) {
       throw error
     }
   }
 
-  // 清空訊息列表
-  const clearMessages = () => {
-    messages.value = []
+  // 清空特定房間的訊息快取
+  const clearMessageCache = (roomId: string) => {
+    if (messageCache.value[roomId]) {
+      delete messageCache.value[roomId]
+    }
   }
 
   /**
@@ -418,11 +448,12 @@ export const useChatStore = defineStore('chat', () => {
     channels,
     dmRooms,
     currentChannel,
+    currentRoomId,
     fetchHideDMRoom,
     fetchDMRoomList,
     fetchCreateDMRoom,
     fetchDMMessages,
     fetchChannelMessages,
-    clearMessages,
+    clearMessageCache,
   }
 })

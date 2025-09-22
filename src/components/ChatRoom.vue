@@ -306,9 +306,6 @@ const initializeRoom = async () => {
     return
   }
 
-  // 先清空訊息列表
-  chatStore.clearMessages()
-
   try {
     // 加入房間
     await chatStore.joinRoom({
@@ -360,8 +357,6 @@ onMounted(async () => {
         })
       }
     }
-    
-    // 移除檢測邏輯，使用純CSS方案
   }
 })
 
