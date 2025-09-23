@@ -19,6 +19,7 @@
           :rules="rules"
           label-position="top"
           class="login-form"
+          @keydown.enter.prevent="handleSubmit"
         >
           <el-form-item label="電子郵件" prop="email">
             <el-input
