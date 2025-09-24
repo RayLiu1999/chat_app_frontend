@@ -90,8 +90,6 @@ export const useChatStore = defineStore('chat', () => {
               return
             }
 
-            console.log('接收 ws:', wsMessage)
-
             // 分發事件
             const customEvent = new CustomEvent(wsMessage.action, { detail: wsMessage.data })
             window.dispatchEvent(customEvent)
@@ -119,12 +117,6 @@ export const useChatStore = defineStore('chat', () => {
                 // ElMessage.success('訊息發送成功')
                 messages.value.push(wsMessage.data)
                 break
-              case 'error':
-                ElMessage.error(`WebSocket 錯誤: ${wsMessage.data.message}`)
-                if (wsMessage.data.original_action === 'join_room') {
-                  router.push('/channels/@me')
-                }
-                break
               case 'user_status':
                 // 用戶狀態更新，由其他 store 處理
                 break
@@ -133,6 +125,10 @@ export const useChatStore = defineStore('chat', () => {
                 break
               case 'webrtc_signaling':
                 // WebRTC 信令，由語音通話 store 處理
+                break
+              // 統一處理錯誤訊息
+              case 'error':
+                wsErrorProcess(wsMessage.data)
                 break
               default:
                 // 其他事件由各自的 store 監聽處理
@@ -166,6 +162,17 @@ export const useChatStore = defineStore('chat', () => {
         resolve(false)
       }
     })
+  }
+
+  // 處理 WebSocket 錯誤
+  const wsErrorProcess = (data: any) => {
+    switch (data.original_action) {
+      case 'join_room':
+        router.push('/channels/@me')
+        break
+      default:
+        break
+    }
   }
 
   // 心跳機制
@@ -311,9 +318,6 @@ export const useChatStore = defineStore('chat', () => {
     })
   }
 
-  // 初始化 visibilitychange 監聽器
-  setupVisibilityListener()
-
   // 取得DM聊天室列表
   const fetchDMRoomList = async (): Promise<void> => {
     try {
@@ -325,10 +329,7 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  /**
-   * 建立DM聊天室
-   * @param dm_room DMRoomAPI.Request.Create
-   */
+  // 建立 DM 聊天室
   const fetchCreateDMRoom = async (dm_room: DMRoomAPI.Request.Create): Promise<DMRoom> => {
     try {
       const { data: response } = await api.post<APIResponse<DMRoom>>('/dm_rooms', dm_room)
@@ -431,6 +432,9 @@ export const useChatStore = defineStore('chat', () => {
       delete messageCache.value[roomId]
     }
   }
+
+  // 初始化 visibilitychange 監聽器
+  setupVisibilityListener()
 
   /**
    * 操作資料 Methods
