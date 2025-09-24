@@ -39,6 +39,7 @@ export interface DMRoom {
   nickname: string
   picture_url: string
   timestamp: number
+  is_online: boolean // 對方在線狀態
 }
 
 export interface Message {

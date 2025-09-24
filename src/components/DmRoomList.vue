@@ -34,6 +34,7 @@
                   :src="dmRoom.picture_url"
                   alt="User"
                   size="xs"
+                  :status="dmRoom.is_online ? 'online' : 'offline'"
                 />
               </div>
               <span class="weak-text"> {{ dmRoom.nickname }} </span>
