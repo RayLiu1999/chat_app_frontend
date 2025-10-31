@@ -33,5 +33,9 @@ export default defineConfig({
         additionalData: '@import "@/assets/_setting.scss";',
       },
     },
-  }
+  },
+  server: {
+    port: Number(process.env.VITE_APP_PORT) || 5173,
+    open: true,
+  },
 })
