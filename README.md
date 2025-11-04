@@ -24,6 +24,7 @@
   - 使用者註冊、登入
   - JWT Token 認證
   - 自動保持登入狀態
+  - 好友系統
   
 - **伺服器管理**
   - 顯示伺服器清單
@@ -44,12 +45,11 @@
   - 右鍵選單禁用
 
 ### 🔄 開發中功能
-- 好友系統
 - 語音/視訊通話
+- 直播串流
 - 檔案上傳
 - 表情符號支援
 - 通知系統
-- 伺服器/頻道管理
 
 ## 🏗️ 專案結構
 
@@ -125,6 +125,8 @@ pnpm format
 創建 `.env` 檔案並設置以下變數：
 
 ```bash
+VITE_APP_PORT=3000
+VITE_APP_DOMAIN=localhost
 VITE_API_DOMAIN=your-api-domain.com
 VITE_ONLINE=false  # 設定為 true 使用 HTTPS/WSS
 ```
@@ -147,12 +149,6 @@ VITE_ONLINE=false  # 設定為 true 使用 HTTPS/WSS
 - 使用 Pinia 管理應用狀態
 - 模組化的 Store 設計
 - 響應式資料綁定
-
-## 🔗 相關連結
-
-- [後端 API 文檔](https://github.com/your-username/chat_app_backend)
-- [設計稿](https://www.figma.com/your-design-link)
-- [部署連結](https://your-deployment-url.com)
 
 ## 📄 授權條款
 
