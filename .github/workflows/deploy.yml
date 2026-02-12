@@ -11,6 +11,10 @@ env:
   OPS_REPO: rayliu1999/side_project_ops
   KUSTOMIZATION_PATH: projects/chat-frontend
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   # test:
   #   name: Run Tests
