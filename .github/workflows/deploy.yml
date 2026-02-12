@@ -23,7 +23,7 @@ jobs:
     with:
       image_name: ghcr.io/${{ github.repository }}
     secrets:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
+      registry_token: ${{ secrets.GITHUB_TOKEN }}
       vite_api_base_url: ${{ secrets.VITE_API_BASE_URL }}
       vite_api_image_url: ${{ secrets.VITE_API_IMAGE_URL }}
 

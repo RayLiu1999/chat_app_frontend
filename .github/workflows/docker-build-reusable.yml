@@ -23,7 +23,7 @@ on:
         type: string
         default: "Dockerfile"
     secrets:
-      github_token:
+      registry_token:
         description: "GitHub Token for GHCR"
         required: true
       vite_api_base_url:
@@ -52,7 +52,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.github_token }}
+          password: ${{ secrets.registry_token }}
 
       - name: Extract metadata
         id: meta
