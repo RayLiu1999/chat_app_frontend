@@ -26,11 +26,11 @@ on:
       registry_token:
         description: "GitHub Token for GHCR"
         required: true
-      vite_api_base_url:
-        description: "VITE_API_BASE_URL"
+      vite_app_domain:
+        description: "VITE_APP_DOMAIN"
         required: false
-      vite_api_image_url:
-        description: "VITE_API_IMAGE_URL"
+      vite_api_domain:
+        description: "VITE_API_DOMAIN"
         required: false
 
 jobs:
@@ -72,8 +72,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VITE_API_BASE_URL=${{ secrets.vite_api_base_url }}
-            VITE_API_IMAGE_URL=${{ secrets.vite_api_image_url }}
+            VITE_APP_DOMAIN=${{ secrets.vite_app_domain }}
+            VITE_API_DOMAIN=${{ secrets.vite_api_domain }}
             ${{ inputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -28,8 +28,8 @@ jobs:
       image_name: ghcr.io/${{ github.repository }}
     secrets:
       registry_token: ${{ secrets.GITHUB_TOKEN }}
-      vite_api_base_url: ${{ secrets.VITE_API_BASE_URL }}
-      vite_api_image_url: ${{ secrets.VITE_API_IMAGE_URL }}
+      vite_app_domain: ${{ secrets.VITE_APP_DOMAIN }}
+      vite_api_domain: ${{ secrets.VITE_API_DOMAIN }}
 
   update-gitops:
     needs: build-and-push
