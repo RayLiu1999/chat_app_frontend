@@ -12,7 +12,7 @@
       <div class="w-100 mr-auto">
         <h2 class="mb-2 text-2xl font-bold text-white">歡迎回來！</h2>
         <p class="mb-6 text-gray-400">我們很高興又見到您了！</p>
-        
+
         <el-form
           ref="formRef"
           :model="formData"
@@ -29,7 +29,7 @@
               size="large"
             />
           </el-form-item>
-          
+
           <el-form-item label="密碼" prop="password">
             <el-input
               v-model="formData.password"
@@ -39,7 +39,7 @@
               show-password
             />
           </el-form-item>
-          
+
           <el-form-item>
             <el-button
               type="primary"
@@ -52,7 +52,7 @@
             </el-button>
           </el-form-item>
         </el-form>
-        
+
         <div class="mt-4 text-gray-400">
           需要一個帳號？
           <RouterLink class="text-blue-400" to="/register"> 註冊 </RouterLink>
@@ -77,19 +77,16 @@
   // 表單資料
   const formData = reactive({
     email: '',
-    password: ''
+    password: '',
   })
 
   // 驗證規則
   const rules = reactive({
-    email: [
-      createValidationRules.required('請輸入電子郵件'),
-      createValidationRules.email()
-    ],
+    email: [createValidationRules.required('請輸入電子郵件'), createValidationRules.email()],
     password: [
       createValidationRules.required('請輸入密碼'),
-      createValidationRules.length(6, 50, '密碼長度需在6-50個字符之間')
-    ]
+      createValidationRules.length(6, 50, '密碼長度需在6-50個字符之間'),
+    ],
   })
 
   const handleSubmit = async () => {
@@ -104,11 +101,11 @@
 
       // 登入
       const userStore = useUserStore()
-      await userStore.fetchLogin({ 
-        email: formData.email, 
-        password: formData.password 
+      await userStore.fetchLogin({
+        email: formData.email,
+        password: formData.password,
       })
-      
+
       // 登入成功後跳轉
       router.push('/channels/@me')
       ElMessage.success('登入成功')
@@ -122,41 +119,41 @@
 </script>
 
 <style lang="scss" scoped>
-.login-form {
-  :deep(.el-form-item__label) {
-    color: #d1d5db !important;
-    font-weight: 500;
-  }
-  
-  :deep(.el-input__wrapper) {
-    background-color: #374151 !important;
-    border: 1px solid transparent !important;
-    
-    &:hover {
-      border-color: transparent !important;
+  .login-form {
+    :deep(.el-form-item__label) {
+      color: #d1d5db !important;
+      font-weight: 500;
     }
-    
-    &.is-focus {
-      border-color: #3b82f6 !important;
+
+    :deep(.el-input__wrapper) {
+      background-color: #374151 !important;
+      border: 1px solid transparent !important;
+
+      &:hover {
+        border-color: transparent !important;
+      }
+
+      &.is-focus {
+        border-color: #3b82f6 !important;
+      }
+    }
+
+    :deep(.el-input__inner) {
+      color: white !important;
+
+      &::placeholder {
+        color: #9ca3af !important;
+      }
+    }
+
+    :deep(.el-button--primary) {
+      background-color: #2563eb !important;
+      border-color: #2563eb !important;
+
+      &:hover {
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+      }
     }
   }
-  
-  :deep(.el-input__inner) {
-    color: white !important;
-    
-    &::placeholder {
-      color: #9ca3af !important;
-    }
-  }
-  
-  :deep(.el-button--primary) {
-    background-color: #2563eb !important;
-    border-color: #2563eb !important;
-    
-    &:hover {
-      background-color: #1d4ed8 !important;
-      border-color: #1d4ed8 !important;
-    }
-  }
-}
 </style>
